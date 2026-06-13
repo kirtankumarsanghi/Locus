@@ -12,7 +12,10 @@ dist
 dist-ssr
 *.local
 *.db
+*.db-shm
+*.db-wal
 .env
+.env.local
 
 # Editor directories and files
 .vscode/*
@@ -24,3 +27,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Vercel
+.vercel
+
+# Backup files
+*.backup
