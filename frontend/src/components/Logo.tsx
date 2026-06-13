@@ -2,6 +2,7 @@ interface LogoProps {
   variant?: 'default' | 'compact' | 'horizontal';
   showTagline?: boolean;
   className?: string;
+  size?: number;
 }
 
 const letters = ['L', 'O', 'C', 'U', 'S'] as const;
@@ -26,9 +27,9 @@ function LogoWordmark({ size, compact }: { size: number; compact?: boolean }) {
   );
 }
 
-export default function Logo({ variant = 'default', showTagline = true, className = '' }: LogoProps) {
+export default function Logo({ variant = 'default', showTagline = true, className = '', size: customSize }: LogoProps) {
   const compact = variant === 'compact';
-  const size = compact ? 32 : variant === 'horizontal' ? 64 : 112;
+  const size = customSize || (compact ? 32 : variant === 'horizontal' ? 64 : 112);
 
   return (
     <div className={`locus-logo ${variant} ${className}`.trim()}>

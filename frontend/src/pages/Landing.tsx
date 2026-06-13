@@ -122,7 +122,7 @@ void main() {
     <div className="bg-background text-on-background antialiased selection:bg-primary-container selection:text-on-primary-container overflow-x-hidden">
       {/* Navbar */}
       <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-lg h-16 glass-panel border-b border-outline-variant shadow-sm transition-all duration-300">
-        <Logo variant="horizontal" showTagline={false} className="scale-75 md:scale-90" />
+        <Logo variant="horizontal" showTagline={false} size={40} className="md:scale-110" />
         <div className="flex items-center gap-gutter">
           <Link to="/map" className="hidden md:inline-flex items-center justify-center px-lg py-sm bg-primary text-on-primary font-label-bold text-label-bold rounded-full hover:bg-surface-tint transition-colors">
             Staff Login
@@ -143,8 +143,8 @@ void main() {
 
         <div className="container mx-auto px-gutter max-w-container-max relative z-10 grid md:grid-cols-2 gap-xl items-center">
           <div className="space-y-lg animate-fade-in-up">
-            <div className="flex items-start gap-6">
-              <Logo variant="default" showTagline={true} className="hidden md:flex" />
+            <div className="flex flex-col items-start gap-4">
+              <Logo variant="default" showTagline={true} size={80} className="hidden md:flex -ml-8" />
               <div className="flex-1">
                 <div className="inline-flex items-center gap-sm px-sm py-1 bg-secondary-container text-on-secondary-container rounded-full font-label-bold text-label-bold mb-4">
                   <span className="w-2 h-2 rounded-full bg-primary animate-pulse-slow" />
