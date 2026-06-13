@@ -78,4 +78,11 @@ export default function CheckinSuccess() {
         <div className="w-full bg-surface-container-low p-md rounded-lg border border-outline-variant flex items-start gap-md">
           <span className="material-symbols-outlined text-tertiary">info</span>
           <div className="flex flex-col gap-xs">
-            <span className="font-label-bold text-label-bold text-on-surface">Away 
+            <span className="font-label-bold text-label-bold text-on-surface">Away Policy Reminder</span>
+            <p className="font-body-sm text-body-sm text-on-surface-variant">If you need to leave temporarily, use the "Set Away" feature. Desks unoccupied for more than 30 minutes without an "Away" status will be automatically released to other students.</p>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
