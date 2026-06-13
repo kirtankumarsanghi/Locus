@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
+import StudentLayout from './components/StudentLayout';
 import Landing from './pages/Landing';
 import MapView from './pages/MapView';
 import DeskList from './pages/DeskList';
@@ -12,6 +13,7 @@ import StudentDashboard from './pages/StudentDashboard';
 import SeatFinder from './pages/SeatFinder';
 import StudentProfile from './pages/StudentProfile';
 import CheckIn from './pages/CheckIn';
+
 function App() {
   return (
     <Router>
@@ -28,11 +30,15 @@ function App() {
           <Route path="/settings" element={<Settings />} />
         </Route>
 
-        {/* Student pages (standalone) */}
-        <Route path="/student" element={<StudentDashboard />} />
-        <Route path="/student/seats" element={<SeatFinder />} />
-        <Route path="/student/profile" element={<StudentProfile />} />
-        <Route path="/student/checkin" element={<CheckIn />} />
+        {/* Student pages with student layout */}
+        <Route element={<StudentLayout />}>
+          <Route path="/student" element={<StudentDashboard />} />
+          <Route path="/student/seats" element={<SeatFinder />} />
+          <Route path="/student/profile" element={<StudentProfile />} />
+          <Route path="/student/checkin" element={<CheckIn />} />
+        </Route>
+
+        {/* Standalone session pages */}
         <Route path="/session" element={<ActiveSession />} />
         <Route path="/checkin-success" element={<CheckinSuccess />} />
       </Routes>

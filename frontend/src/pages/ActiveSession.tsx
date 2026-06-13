@@ -109,7 +109,7 @@ export default function ActiveSession() {
           <span className="material-symbols-outlined">arrow_back</span>
           <span className="font-label-bold text-label-bold hidden sm:inline">Back</span>
         </button>
-        <Logo variant="horizontal" showTagline={false} className="scale-75" />
+        <Logo variant="compact" showTagline={false} />
         <div className="flex items-center gap-sm">
           <button className="p-xs text-secondary hover:bg-surface-container-high transition-colors rounded-full">
             <span className="material-symbols-outlined">notifications</span>
