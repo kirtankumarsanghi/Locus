@@ -1,1 +1,1 @@
-web: npx serve dist -l $PORT -c serve.json
+web: npx serve dist -l $PORT -c ./serve.json
