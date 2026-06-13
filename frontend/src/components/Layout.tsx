@@ -45,8 +45,8 @@ export default function Layout() {
             <span className="material-symbols-outlined text-2xl">account_circle</span>
           </button>
           <div className="ml-2 h-8 w-px bg-gray-200"></div>
-          <div className="flex items-center gap-2.5 px-3 py-1.5 bg-gradient-to-br from-primary/5 to-indigo-500/5 rounded-xl border border-primary/10">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-indigo-600 flex items-center justify-center shadow-sm">
+          <div className="flex items-center gap-2.5 px-3 py-1.5 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl border border-slate-200">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center shadow-sm">
               <span className="material-symbols-outlined text-white text-lg">person</span>
             </div>
             <div className="hidden md:block">
@@ -61,10 +61,10 @@ export default function Layout() {
         {/* Enhanced SideNavBar (Desktop) */}
         <nav className="hidden md:flex flex-col fixed left-0 top-20 h-[calc(100vh-80px)] w-64 p-3 bg-gradient-to-b from-white/95 to-indigo-50/90 backdrop-blur-2xl border-r-2 border-primary/10 z-40 shadow-2xl">
           {/* Library Info Card - matching the image design */}
-          <div className="mb-3 p-3 bg-gradient-to-br from-indigo-50/80 to-indigo-100/60 rounded-2xl border border-primary/10 shadow-sm">
+          <div className="mb-3 p-3 bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl border border-slate-200 shadow-sm">
             <div className="flex items-center gap-3">
               {/* Horizontal LOCUS text in card */}
-              <div className="flex items-center gap-0.5 text-primary font-black text-lg tracking-tight">
+              <div className="flex items-center gap-0.5 text-slate-700 font-black text-lg tracking-tight">
                 <span>L</span>
                 <span>O</span>
                 <span>C</span>
@@ -97,7 +97,7 @@ export default function Layout() {
                       to={item.to}
                       className={`flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all text-sm ${
                         isActive 
-                          ? 'bg-primary text-white shadow-lg shadow-primary/40' 
+                          ? 'bg-slate-700 text-white shadow-lg' 
                           : 'text-on-surface-variant bg-surface-container/40 hover:bg-surface-container/60'
                       }`}
                     >
@@ -134,8 +134,8 @@ export default function Layout() {
           </ul>
 
           {/* User Profile Card */}
-          <div className="mt-2 p-2.5 bg-gradient-to-br from-primary/10 to-indigo-500/10 rounded-xl border border-primary/20 flex items-center gap-2.5 cursor-pointer hover:scale-[1.01] transition-transform">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-indigo-600 flex items-center justify-center shadow-md">
+          <div className="mt-2 p-2.5 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl border border-slate-200 flex items-center gap-2.5 cursor-pointer hover:scale-[1.01] transition-transform">
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center shadow-md">
               <span className="material-symbols-outlined text-white text-lg">person</span>
             </div>
             <div className="flex-1 min-w-0">
