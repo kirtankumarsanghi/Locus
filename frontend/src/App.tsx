@@ -8,7 +8,10 @@ import Analytics from './pages/Analytics';
 import Settings from './pages/Settings';
 import ActiveSession from './pages/ActiveSession';
 import CheckinSuccess from './pages/CheckinSuccess';
-
+import StudentDashboard from './pages/StudentDashboard';
+import SeatFinder from './pages/SeatFinder';
+import StudentProfile from './pages/StudentProfile';
+import CheckIn from './pages/CheckIn';
 function App() {
   return (
     <Router>
@@ -26,6 +29,10 @@ function App() {
         </Route>
 
         {/* Student pages (standalone) */}
+        <Route path="/student" element={<StudentDashboard />} />
+        <Route path="/student/seats" element={<SeatFinder />} />
+        <Route path="/student/profile" element={<StudentProfile />} />
+        <Route path="/student/checkin" element={<CheckIn />} />
         <Route path="/session" element={<ActiveSession />} />
         <Route path="/checkin-success" element={<CheckinSuccess />} />
       </Routes>

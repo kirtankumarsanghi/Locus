@@ -124,6 +124,13 @@ void main() {
       <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-lg h-16 glass-panel border-b border-outline-variant shadow-sm transition-all duration-300">
         <Logo variant="horizontal" showTagline={false} size={40} className="md:scale-110" />
         <div className="flex items-center gap-gutter">
+            <Link
+    to="/student"
+    className="hidden md:inline-flex items-center justify-center px-lg py-sm bg-secondary-container text-on-secondary-container font-label-bold text-label-bold rounded-full hover:opacity-90 transition-colors"
+  >
+    Student Portal
+  </Link>
+
           <Link to="/map" className="hidden md:inline-flex items-center justify-center px-lg py-sm bg-primary text-on-primary font-label-bold text-label-bold rounded-full hover:bg-surface-tint transition-colors">
             Staff Login
           </Link>
