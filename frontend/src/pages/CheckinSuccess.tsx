@@ -1,4 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import Logo from '../components/Logo';
 
 export default function CheckinSuccess() {
   const location = useLocation();
@@ -28,10 +29,7 @@ export default function CheckinSuccess() {
           <span className="material-symbols-outlined">arrow_back</span>
           <span className="font-label-bold text-label-bold hidden sm:inline">Back</span>
         </button>
-        <div className="flex items-center gap-sm">
-          <span className="material-symbols-outlined text-primary" style={{ fontSize: '24px' }}>qr_code_scanner</span>
-          <span className="font-headline-md text-headline-md text-on-surface font-bold">Locus</span>
-        </div>
+        <Logo variant="horizontal" showTagline={false} className="scale-75" />
         <Link to="/" className="font-label-bold text-label-bold text-primary hover:underline">Close</Link>
       </header>
 
