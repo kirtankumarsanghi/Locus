@@ -28,6 +28,35 @@ export default function ActiveSession() {
       const circumference = radius * 2 * Math.PI;
       const maxTime = status === 'AWAY' ? 1200 : 2700;
       const percent = (timeLeft / maxTime) * 100;
+import { useState, useEffect, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import Logo from '../components/Logo';
+
+export default function ActiveSession() {
+  const [deskNumber, setDeskNumber] = useState('');
+  const [studentId, setStudentId] = useState('');
+  const [sessionId, setSessionId] = useState<number | null>(null);
+  const [status, setStatus] = useState<'IDLE' | 'OCCUPIED' | 'AWAY'>('IDLE');
+  const [error, setError] = useState('');
+  const [timeLeft, setTimeLeft] = useState(2700);
+  const circleRef = useRef<SVGCircleElement>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (status !== 'IDLE') {
+      const timer = setInterval(() => {
+        setTimeLeft(prev => (prev > 0 ? prev - 1 : 0));
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [status]);
+
+  useEffect(() => {
+    if (circleRef.current && status !== 'IDLE') {
+      const radius = 54;
+      const circumference = radius * 2 * Math.PI;
+      const maxTime = status === 'AWAY' ? 1200 : 2700;
+      const percent = (timeLeft / maxTime) * 100;
       const offset = circumference - (percent / 100) * circumference;
       circleRef.current.style.strokeDasharray = `${circumference} ${circumference}`;
       circleRef.current.style.strokeDashoffset = `${offset}`;
@@ -40,18 +69,17 @@ export default function ActiveSession() {
       const res = await fetch(`${API_BASE_URL}/api/check-in`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ deskNumber: parseInt(deskNumber), studentId }),
+        body: JSON.stringify({ deskNumber, studentId }),
       });
       const data = await res.json();
       if (res.ok && data.success) {
         setSessionId(data.sessionId);
-        // Navigate to success page, then return here for active session
         navigate('/checkin-success', { state: { deskNumber, sessionId: data.sessionId } });
       } else {
         setError(data.error || 'Failed to check in');
       }
     } catch (err) {
-      setError('Network error');
+      setError('Network error. Backend might be unavailable.');
     }
   };
 
@@ -90,11 +118,19 @@ export default function ActiveSession() {
     } catch (err) {}
   };
 
-  const handleEnd = () => {
+  const handleEnd = async () => {
+    try {
+      await fetch(`${API_BASE_URL}/api/checkout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId }),
+      });
+    } catch (err) {}
     setSessionId(null);
     setStatus('IDLE');
     setDeskNumber('');
     setStudentId('');
+    navigate('/student');
   };
 
   const formatTime = (s: number) => `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`;
@@ -230,7 +266,7 @@ export default function ActiveSession() {
 
       {/* BottomNavBar (Mobile) */}
       <nav className="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-gutter py-xs bg-surface/90 backdrop-blur-md border-t border-outline-variant shadow-xl rounded-t-3xl">
-        <Link to="/" className="flex flex-col items-center justify-center text-on-surface-variant rounded-lg px-4 py-1">
+        <Link to="/student/seats" className="flex flex-col items-center justify-center text-on-surface-variant rounded-lg px-4 py-1">
           <span className="material-symbols-outlined">explore</span>
           <span className="font-label-bold text-[10px] mt-1">Map</span>
         </Link>
@@ -238,7 +274,7 @@ export default function ActiveSession() {
           <span className="material-symbols-outlined fill">person</span>
           <span className="font-label-bold text-[10px] mt-1">Session</span>
         </span>
-        <Link to="/" className="flex flex-col items-center justify-center text-on-surface-variant rounded-lg px-4 py-1">
+        <Link to="/student/profile" className="flex flex-col items-center justify-center text-on-surface-variant rounded-lg px-4 py-1">
           <span className="material-symbols-outlined">notifications</span>
           <span className="font-label-bold text-[10px] mt-1">Alerts</span>
         </Link>
@@ -246,5 +282,3 @@ export default function ActiveSession() {
     </div>
   );
 }
-
-

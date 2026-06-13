@@ -30,7 +30,7 @@ export default function CheckinSuccess() {
           <span className="font-label-bold text-label-bold hidden sm:inline">Back</span>
         </button>
         <Logo variant="horizontal" showTagline={false} className="scale-75" />
-        <Link to="/" className="font-label-bold text-label-bold text-primary hover:underline">Close</Link>
+        <Link to="/student" className="font-label-bold text-label-bold text-primary hover:underline">Close</Link>
       </header>
 
       <main className="flex-grow pt-[80px] px-gutter max-w-lg mx-auto w-full flex flex-col items-center">
@@ -62,7 +62,7 @@ export default function CheckinSuccess() {
 
         {/* Action Buttons */}
         <div className="w-full flex flex-col gap-sm mb-lg">
-          <Link to="/" className="w-full py-md bg-primary-container text-on-primary-container rounded-full font-label-bold text-label-bold flex items-center justify-center gap-sm hover:opacity-90 transition-opacity shadow-md">
+          <Link to="/student/seats" className="w-full py-md bg-primary-container text-on-primary-container rounded-full font-label-bold text-label-bold flex items-center justify-center gap-sm hover:opacity-90 transition-opacity shadow-md">
             <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>map</span>
             View Map
           </Link>

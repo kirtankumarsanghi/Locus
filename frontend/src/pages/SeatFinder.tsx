@@ -25,24 +25,18 @@ export default function SeatFinder() {
   const fetchDesks = async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/desks`);
-      const data = await res.json();
-      setDesks(data);
+      if (res.ok) {
+        const data = await res.json();
+        setDesks(data);
+      }
     } catch (err) {
       console.error('Failed to fetch desks', err);
-      setDesks(generateMockDesks());
     } finally {
       setLoading(false);
     }
   };
 
-  const generateMockDesks = (): Desk[] => {
-    return Array.from({ length: 8 }, (_, i) => ({
-      id: i + 1,
-      number: i + 1,
-      status: i === 1 ? 'OCCUPIED' : i === 3 ? 'AWAY' : i === 6 ? 'ABANDONED' : 'FREE',
-      current_session_id: i === 1 || i === 3 || i === 6 ? 1000 + i : null,
-    }));
-  };
+
 
   const deskLabel = (num: number) => {
     if (num <= 4) return `A-${(11 + num).toString().padStart(2, '0')}`;
@@ -83,7 +77,7 @@ export default function SeatFinder() {
     
     if (confirm(`Reserve Desk ${deskLabel(desk.number)}?\n\nYou'll need to scan the QR code at the desk within 5 minutes to confirm.`)) {
       alert(`Desk ${deskLabel(desk.number)} reserved!\n\nPlease proceed to the desk and scan the QR code to check in.`);
-      navigate('/student/checkin');
+      navigate('/student/checkin', { state: { prefillDesk: deskLabel(desk.number) } });
     }
   };
 

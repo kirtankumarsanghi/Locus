@@ -1,9 +1,10 @@
 import { API_BASE_URL } from '../config';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 export default function CheckIn() {
-  const [deskNumber, setDeskNumber] = useState('');
+  const location = useLocation();
+  const [deskNumber, setDeskNumber] = useState(location.state?.prefillDesk || '');
   const [studentId, setStudentId] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -42,10 +43,7 @@ export default function CheckIn() {
       }
     } catch (err) {
       console.error('Check-in error:', err);
-      // Demo mode - show success without backend
-      navigate('/checkin-success', { 
-        state: { deskNumber, sessionId: 'demo-' + Date.now() } 
-      });
+      setError('Network error. Backend might be unavailable.');
     } finally {
       setLoading(false);
     }

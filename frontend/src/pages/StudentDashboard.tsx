@@ -23,25 +23,18 @@ export default function StudentDashboard() {
   const fetchDesks = async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/desks`);
-      const data = await res.json();
-      setDesks(data);
+      if (res.ok) {
+        const data = await res.json();
+        setDesks(data);
+      }
     } catch (err) {
       console.error('Failed to fetch desks', err);
-      // Use mock data if backend unavailable
-      setDesks(generateMockDesks());
     } finally {
       setLoading(false);
     }
   };
 
-  const generateMockDesks = (): Desk[] => {
-    return Array.from({ length: 8 }, (_, i) => ({
-      id: i + 1,
-      number: i + 1,
-      status: i === 1 ? 'OCCUPIED' : i === 3 ? 'AWAY' : i === 6 ? 'ABANDONED' : 'FREE',
-      current_session_id: i === 1 || i === 3 || i === 6 ? 1000 + i : null,
-    }));
-  };
+
 
   const availableCount = desks.filter(d => d.status === 'FREE').length;
   const occupiedCount = desks.filter(d => d.status === 'OCCUPIED').length;

@@ -4,6 +4,43 @@ import { useNavigate } from 'react-router-dom';
 export default function Settings() {
   const navigate = useNavigate();
   const [hasChanges, setHasChanges] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [libraryName, setLibraryName] = useState('Main Library');
+  const [location, setLocation] = useState('Main Campus');
+  const [totalDesks, setTotalDesks] = useState('8');
+  const [awayTimeout, setAwayTimeout] = useState('30');
+  const [autoRelease, setAutoRelease] = useState('60');
+  const [openTime, setOpenTime] = useState('07:00');
+  const [closeTime, setCloseTime] = useState('23:00');
+
+  const handleSave = () => {
+    // In production this would POST to the backend
+    setHasChanges(false);
+    setSaveSuccess(true);
+    setTimeout(() => setSaveSuccess(false), 3000);
+  };
+
+  const handleCancel = () => {
+    setHasChanges(false);
+    setLibraryName('Main Library');
+    setLocation('Main Campus');
+    setTotalDesks('8');
+    setAwayTimeout('30');
+    setAutoRelease('60');
+    setOpenTime('07:00');
+    setCloseTime('23:00');
+  };
+
+  const handleGenerateQR = () => {
+    alert('QR codes generated for all 8 desks!\n\nIn production, this would generate printable PDF with QR codes linking to the check-in page for each desk.');
+  };
+
+  const computeHours = () => {
+    const [oh, om] = openTime.split(':').map(Number);
+    const [ch, cm] = closeTime.split(':').map(Number);
+    const diff = (ch * 60 + cm) - (oh * 60 + om);
+    return diff > 0 ? Math.round(diff / 60) : 0;
+  };
 
   return (
     <main className="flex-1 md:ml-64 p-6 md:p-8 mx-auto mb-20 md:mb-0 overflow-y-auto bg-gray-50">
@@ -51,8 +88,8 @@ export default function Settings() {
             </label>
             <input 
               type="text" 
-              defaultValue="Main Library" 
-              onChange={() => setHasChanges(true)}
+              value={libraryName}
+              onChange={(e) => { setLibraryName(e.target.value); setHasChanges(true); }}
               className="w-full px-4 py-3.5 bg-white border border-gray-200 hover:border-slate-300 rounded-xl text-gray-900 font-medium focus:outline-none focus:border-slate-600 focus:ring-2 focus:ring-slate-200 transition-all"
             />
           </div>
@@ -64,8 +101,8 @@ export default function Settings() {
             </label>
             <input 
               type="text" 
-              defaultValue="Main Campus" 
-              onChange={() => setHasChanges(true)}
+              value={location}
+              onChange={(e) => { setLocation(e.target.value); setHasChanges(true); }}
               className="w-full px-4 py-3.5 bg-white border border-gray-200 hover:border-slate-300 rounded-xl text-gray-900 font-medium focus:outline-none focus:border-slate-600 focus:ring-2 focus:ring-slate-200 transition-all"
             />
           </div>
@@ -77,8 +114,8 @@ export default function Settings() {
             </label>
             <input 
               type="number" 
-              defaultValue="120" 
-              onChange={() => setHasChanges(true)}
+              value={totalDesks}
+              onChange={(e) => { setTotalDesks(e.target.value); setHasChanges(true); }}
               className="w-full px-4 py-3.5 bg-white border border-gray-200 hover:border-slate-300 rounded-xl text-gray-900 font-medium focus:outline-none focus:border-slate-600 focus:ring-2 focus:ring-slate-200 transition-all"
             />
             <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
@@ -108,8 +145,8 @@ export default function Settings() {
             </label>
             <input 
               type="number" 
-              defaultValue="30" 
-              onChange={() => setHasChanges(true)}
+              value={awayTimeout}
+              onChange={(e) => { setAwayTimeout(e.target.value); setHasChanges(true); }}
               className="w-full px-4 py-3.5 bg-white border-2 border-gray-200 hover:border-amber-200 rounded-xl text-gray-900 font-medium focus:outline-none focus:border-amber-400 focus:ring-4 focus:ring-amber-100 transition-all shadow-sm"
             />
             <p className="text-xs text-gray-600 mt-2 bg-amber-50 px-3 py-2 rounded-lg border border-amber-200">
@@ -124,8 +161,8 @@ export default function Settings() {
             </label>
             <input 
               type="number" 
-              defaultValue="60" 
-              onChange={() => setHasChanges(true)}
+              value={autoRelease}
+              onChange={(e) => { setAutoRelease(e.target.value); setHasChanges(true); }}
               className="w-full px-4 py-3.5 bg-white border-2 border-gray-200 hover:border-amber-200 rounded-xl text-gray-900 font-medium focus:outline-none focus:border-amber-400 focus:ring-4 focus:ring-amber-100 transition-all shadow-sm"
             />
             <p className="text-xs text-gray-600 mt-2 bg-amber-50 px-3 py-2 rounded-lg border border-amber-200">
@@ -187,8 +224,8 @@ export default function Settings() {
             </label>
             <input 
               type="time" 
-              defaultValue="07:00" 
-              onChange={() => setHasChanges(true)}
+              value={openTime}
+              onChange={(e) => { setOpenTime(e.target.value); setHasChanges(true); }}
               className="w-full px-4 py-3.5 bg-white border-2 border-gray-200 hover:border-emerald-200 rounded-xl text-gray-900 font-medium focus:outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100 transition-all shadow-sm"
             />
           </div>
@@ -199,8 +236,8 @@ export default function Settings() {
             </label>
             <input 
               type="time" 
-              defaultValue="23:00" 
-              onChange={() => setHasChanges(true)}
+              value={closeTime}
+              onChange={(e) => { setCloseTime(e.target.value); setHasChanges(true); }}
               className="w-full px-4 py-3.5 bg-white border-2 border-gray-200 hover:border-emerald-200 rounded-xl text-gray-900 font-medium focus:outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100 transition-all shadow-sm"
             />
           </div>
@@ -208,7 +245,7 @@ export default function Settings() {
         <div className="mt-4 p-3 bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl border border-emerald-200">
           <p className="text-sm text-gray-700 flex items-start gap-2">
             <span className="material-symbols-outlined text-emerald-600 text-sm mt-0.5">info</span>
-            <span>Your library is open for <span className="font-bold text-emerald-700">16 hours</span> daily</span>
+            <span>Your library is open for <span className="font-bold text-emerald-700">{computeHours()} hours</span> daily</span>
           </p>
         </div>
       </div>
@@ -253,7 +290,10 @@ export default function Settings() {
           </label>
         </div>
 
-        <button className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-slate-700 to-slate-800 text-white font-bold rounded-xl hover:shadow-lg transition-all hover:scale-[1.02] group">
+        <button 
+          onClick={handleGenerateQR}
+          className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-slate-700 to-slate-800 text-white font-bold rounded-xl hover:shadow-lg transition-all hover:scale-[1.02] group"
+        >
           <span className="material-symbols-outlined">qr_code_scanner</span>
           <span>Generate QR Codes</span>
           <span className="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
@@ -264,7 +304,12 @@ export default function Settings() {
       {/* Save Actions */}
       <div className="sticky bottom-0 left-0 right-0 bg-white border-t-2 border-gray-200 p-6 rounded-t-2xl shadow-2xl flex flex-col md:flex-row justify-between items-center gap-4">
         <p className="text-sm text-gray-600">
-          {hasChanges ? (
+          {saveSuccess ? (
+            <span className="flex items-center gap-2 text-emerald-600">
+              <span className="material-symbols-outlined text-sm">check_circle</span>
+              Settings saved successfully!
+            </span>
+          ) : hasChanges ? (
             <span className="flex items-center gap-2">
               <span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></span>
               You have unsaved changes
@@ -278,14 +323,15 @@ export default function Settings() {
         </p>
         <div className="flex gap-3 w-full md:w-auto">
           <button 
-            onClick={() => setHasChanges(false)}
+            onClick={handleCancel}
             className="flex-1 md:flex-none px-6 py-3.5 bg-white border-2 border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all"
           >
             Cancel
           </button>
           <button 
-            onClick={() => setHasChanges(false)}
-            className="flex-1 md:flex-none px-8 py-3.5 bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] flex items-center justify-center gap-2 group"
+            onClick={handleSave}
+            disabled={!hasChanges}
+            className="flex-1 md:flex-none px-8 py-3.5 bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
           >
             <span>Save Changes</span>
             <span className="material-symbols-outlined text-sm group-hover:scale-110 transition-transform">check</span>

@@ -80,7 +80,7 @@ app.post('/api/check-in', (req: Request, res: Response) => {
   }
 
   try {
-    const desk = db.prepare('SELECT * FROM desks WHERE number = ?').get(deskNumber) as Desk | undefined;
+    const desk = db.prepare('SELECT * FROM desks WHERE number = ? OR label = ? COLLATE NOCASE').get(deskNumber, deskNumber) as Desk | undefined;
     if (!desk) {
       res.status(404).json({ error: 'Desk not found' });
       return;

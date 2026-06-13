@@ -1,55 +1,90 @@
 import { API_BASE_URL } from '../config';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+
+interface Session {
+  id: number;
+  desk_id: number;
+  student_id: string;
+  status: string;
+  start_time: string;
+  away_start_time: string | null;
+  last_check_in_time: string;
+  end_time: string | null;
+}
 
 interface Desk {
   id: number;
   number: number;
+  label: string;
+  zone: string;
+  floor: number;
   status: 'FREE' | 'OCCUPIED' | 'AWAY' | 'ABANDONED';
   current_session_id: number | null;
+  updated_at: string;
+}
+
+interface DeskDetail {
+  desk: Desk;
+  session: Session | null;
 }
 
 export default function MapView() {
   const navigate = useNavigate();
   const [desks, setDesks] = useState<Desk[]>([]);
   const [selectedDesk, setSelectedDesk] = useState<Desk | null>(null);
+  const [selectedDeskDetail, setSelectedDeskDetail] = useState<DeskDetail | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const mapRef = useRef<HTMLDivElement>(null);
   const [isPanning, setIsPanning] = useState(false);
   const panStart = useRef({ x: 0, y: 0, scrollLeft: 0, scrollTop: 0 });
 
-  const fetchDesks = async (showLoading = false) => {
+  const fetchDesks = useCallback(async (showLoading = false) => {
     if (showLoading) setIsRefreshing(true);
     try {
       const res = await fetch(`${API_BASE_URL}/api/desks`);
-      const data = await res.json();
-      setDesks(data);
+      if (res.ok) {
+        const data = await res.json();
+        setDesks(data);
+        // If a desk is selected, update its data
+        if (selectedDesk) {
+          const updated = data.find((d: Desk) => d.id === selectedDesk.id);
+          if (updated) setSelectedDesk(updated);
+        }
+      }
     } catch (err) {
       console.error('Failed to fetch desks', err);
-      // Use mock data if backend is not available
-      setDesks(generateMockDesks());
     } finally {
       if (showLoading) setIsRefreshing(false);
     }
-  };
+  }, [selectedDesk]);
 
-  // Generate mock desks for demo
-  const generateMockDesks = (): Desk[] => {
-    // Removed unused _statuses variable
-    return Array.from({ length: 8 }, (_, i) => ({
-      id: i + 1,
-      number: i + 1,
-      status: i === 1 ? 'OCCUPIED' : i === 3 ? 'AWAY' : i === 6 ? 'ABANDONED' : 'FREE',
-      current_session_id: i === 1 || i === 3 || i === 6 ? 1000 + i : null,
-    }));
-  };
+  // Fetch desk detail when a desk is selected
+  const fetchDeskDetail = useCallback(async (deskId: number) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/desks/${deskId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setSelectedDeskDetail(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch desk detail', err);
+    }
+  }, []);
 
   useEffect(() => {
-    // Try to fetch from backend, fallback to mock data
     fetchDesks();
     const interval = setInterval(() => fetchDesks(), 5000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (selectedDesk) {
+      fetchDeskDetail(selectedDesk.id);
+    } else {
+      setSelectedDeskDetail(null);
+    }
+  }, [selectedDesk, fetchDeskDetail]);
 
   const handleReset = async (deskId: number) => {
     if (!confirm('Are you sure you want to reset this desk? This will end any active session.')) {
@@ -64,15 +99,15 @@ export default function MapView() {
       });
       
       if (res.ok) {
-        // Update local state immediately for better UX
         setDesks(prevDesks => 
           prevDesks.map(desk => 
             desk.id === deskId 
-              ? { ...desk, status: 'FREE', current_session_id: null }
+              ? { ...desk, status: 'FREE' as const, current_session_id: null }
               : desk
           )
         );
         setSelectedDesk(null);
+        setSelectedDeskDetail(null);
         alert('Desk reset successfully!');
         fetchDesks();
       } else {
@@ -100,11 +135,12 @@ export default function MapView() {
         setDesks(prevDesks => 
           prevDesks.map(desk => 
             desk.id === deskId 
-              ? { ...desk, status: 'FREE', current_session_id: null }
+              ? { ...desk, status: 'FREE' as const, current_session_id: null }
               : desk
           )
         );
         setSelectedDesk(null);
+        setSelectedDeskDetail(null);
         alert('Session ended successfully!');
         fetchDesks();
       } else {
@@ -117,20 +153,10 @@ export default function MapView() {
   };
 
   const handleFlagIssue = (_deskId: number) => {
-    const issue = prompt('Describe the issue with this desk:');
+    const label = selectedDesk ? deskLabel(selectedDesk.number) : 'Unknown';
+    const issue = prompt(`Describe the issue with Desk ${label}:`);
     if (issue) {
-      alert(`Issue flagged for Desk ${deskLabel(selectedDesk?.number || 0)}: "${issue}"\n\nStaff will be notified.`);
-      // In production, this would send to backend
-    }
-  };
-
-  const handleReserve = (desk: Desk) => {
-    if (desk.status !== 'FREE') return;
-    
-    if (confirm(`Reserve Desk ${deskLabel(desk.number)}?\n\nYou'll need to scan the QR code at the desk within 5 minutes to confirm.`)) {
-      alert(`Desk ${deskLabel(desk.number)} reserved!\n\nPlease proceed to the desk and scan the QR code to check in.`);
-      // In production, this would create a temporary reservation in the backend
-      navigate('/session');
+      alert(`Issue flagged for Desk ${label}: "${issue}"\n\nStaff will be notified.`);
     }
   };
 
@@ -187,6 +213,26 @@ export default function MapView() {
     return `B-${(num - 4).toString().padStart(2, '0')}`;
   };
 
+  // Compute duration from a timestamp string
+  const formatDuration = (isoStr: string | null | undefined) => {
+    if (!isoStr) return '-';
+    const start = new Date(isoStr + 'Z'); // SQLite stores UTC without Z
+    const now = new Date();
+    const diffMs = now.getTime() - start.getTime();
+    if (diffMs < 0) return '0m';
+    const totalMin = Math.floor(diffMs / 60000);
+    if (totalMin < 60) return `${totalMin}m`;
+    const h = Math.floor(totalMin / 60);
+    const m = totalMin % 60;
+    return `${h}h ${m}m`;
+  };
+
+  const formatTime = (isoStr: string | null | undefined) => {
+    if (!isoStr) return '-';
+    const d = new Date(isoStr + 'Z');
+    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
   const abandonedCount = desks.filter(d => d.status === 'ABANDONED').length;
   const awayCount = desks.filter(d => d.status === 'AWAY').length;
   const freeCount = desks.filter(d => d.status === 'FREE').length;
@@ -227,6 +273,9 @@ export default function MapView() {
       default: return 'text-on-surface-variant';
     }
   };
+
+  // Get the session for the selected desk from the detail
+  const session = selectedDeskDetail?.session || null;
 
   return (
     <main className="flex-1 flex flex-col md:flex-row md:ml-64 relative bg-transparent overflow-hidden">
@@ -329,13 +378,7 @@ export default function MapView() {
             {desks.map((desk, idx) => (
               <div
                 key={desk.id}
-                onClick={() => {
-                  if (desk.status === 'FREE') {
-                    setSelectedDesk(desk);
-                  } else {
-                    setSelectedDesk(desk);
-                  }
-                }}
+                onClick={() => setSelectedDesk(desk)}
                 className={`${getDeskClasses(desk)} ${idx >= 4 ? 'mt-4' : ''}`}
                 role="button"
                 aria-label={`Desk ${deskLabel(desk.number)} - ${desk.status}`}
@@ -363,13 +406,13 @@ export default function MapView() {
                 {desk.status === 'OCCUPIED' && (
                   <div className={`flex items-center gap-1 mt-2 px-3 py-1 bg-rose-100 rounded-full ${getDeskTextClass(desk.status)}`}>
                     <span className="material-symbols-outlined text-[12px]">schedule</span>
-                    <span className="font-label-bold text-[11px]">1h 45m</span>
+                    <span className="font-label-bold text-[11px]">{formatDuration(desk.updated_at)}</span>
                   </div>
                 )}
                 {desk.status === 'AWAY' && (
                   <div className={`flex items-center gap-1 mt-2 px-3 py-1 bg-amber-100 rounded-full ${getDeskTextClass(desk.status)}`}>
                     <span className="material-symbols-outlined text-[12px]">hourglass_empty</span>
-                    <span className="font-label-bold text-[11px]">Away 12m</span>
+                    <span className="font-label-bold text-[11px]">Away {formatDuration(desk.updated_at)}</span>
                   </div>
                 )}
                 {desk.status === 'ABANDONED' && (
@@ -380,7 +423,7 @@ export default function MapView() {
                 )}
                 {desk.status === 'FREE' && (
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-emerald-500/10 rounded-2xl">
-                    <span className="bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">Click to Reserve</span>
+                    <span className="bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">Click to select</span>
                   </div>
                 )}
 
@@ -483,32 +526,61 @@ export default function MapView() {
                     {getStatusBadge(selectedDesk.status).label}
                   </span>
                 </div>
-                <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                  <span className="material-symbols-outlined text-gray-400">more_vert</span>
+                <button 
+                  onClick={() => setSelectedDesk(null)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <span className="material-symbols-outlined text-gray-400">close</span>
                 </button>
               </div>
               
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between py-2 px-3 bg-gray-50 rounded-lg">
                   <span className="font-body-sm text-body-sm text-gray-600 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-sm">badge</span>
+                    Student ID
+                  </span>
+                  <span className="font-body-sm text-body-sm text-on-surface font-bold">
+                    {session?.student_id || '-'}
+                  </span>
+                </div>
+                <div className="flex justify-between py-2 px-3 bg-gray-50 rounded-lg">
+                  <span className="font-body-sm text-body-sm text-gray-600 flex items-center gap-2">
                     <span className="material-symbols-outlined text-sm">schedule</span>
                     Session Started
                   </span>
-                  <span className="font-body-sm text-body-sm text-on-surface font-bold">{selectedDesk.status !== 'FREE' ? '09:15 AM' : '-'}</span>
+                  <span className="font-body-sm text-body-sm text-on-surface font-bold">
+                    {session ? formatTime(session.start_time) : '-'}
+                  </span>
                 </div>
                 <div className="flex justify-between py-2 px-3 bg-gray-50 rounded-lg">
                   <span className="font-body-sm text-body-sm text-gray-600 flex items-center gap-2">
                     <span className="material-symbols-outlined text-sm">hourglass_empty</span>
                     Duration
                   </span>
-                  <span className="font-body-sm text-body-sm text-on-surface font-bold">{selectedDesk.status !== 'FREE' ? '1h 45m' : '-'}</span>
+                  <span className="font-body-sm text-body-sm text-on-surface font-bold">
+                    {session ? formatDuration(session.start_time) : '-'}
+                  </span>
                 </div>
+                {session?.away_start_time && (
+                  <div className="flex justify-between py-2 px-3 bg-amber-50 rounded-lg border border-amber-200">
+                    <span className="font-body-sm text-body-sm text-amber-700 flex items-center gap-2">
+                      <span className="material-symbols-outlined text-sm">directions_walk</span>
+                      Away Since
+                    </span>
+                    <span className="font-body-sm text-body-sm text-amber-800 font-bold">
+                      {formatTime(session.away_start_time)} ({formatDuration(session.away_start_time)})
+                    </span>
+                  </div>
+                )}
                 <div className="flex justify-between py-2 px-3 bg-gray-50 rounded-lg">
                   <span className="font-body-sm text-body-sm text-gray-600 flex items-center gap-2">
-                    <span className="material-symbols-outlined text-sm">person</span>
-                    User Type
+                    <span className="material-symbols-outlined text-sm">location_on</span>
+                    Zone / Floor
                   </span>
-                  <span className="font-body-sm text-body-sm text-on-surface font-bold">{selectedDesk.status !== 'FREE' ? 'Undergraduate' : '-'}</span>
+                  <span className="font-body-sm text-body-sm text-on-surface font-bold">
+                    Zone {selectedDesk.zone} · Floor {selectedDesk.floor}
+                  </span>
                 </div>
               </div>
               
@@ -544,13 +616,9 @@ export default function MapView() {
                     </button>
                   </>
                 ) : (
-                  <button 
-                    onClick={() => handleReserve(selectedDesk)} 
-                    className="flex-1 bg-gradient-to-r from-emerald-500 to-green-600 text-white py-2.5 rounded-xl font-label-bold text-label-bold shadow-lg hover:opacity-90 transition-all flex items-center justify-center gap-2"
-                  >
-                    <span className="material-symbols-outlined text-lg">bookmark_add</span>
-                    Reserve Desk
-                  </button>
+                  <p className="flex-1 text-center text-sm text-gray-500 py-3 bg-emerald-50 rounded-xl border border-emerald-200">
+                    <span className="font-semibold text-emerald-700">This desk is available</span>
+                  </p>
                 )}
               </div>
             </div>
@@ -565,20 +633,18 @@ export default function MapView() {
           )}
         </div>
 
-        {/* Primary Action - Enhanced */}
+        {/* Quick Links */}
         <div className="p-6 border-t border-gray-200 mt-auto">
           <Link 
-            to="/session" 
+            to="/list" 
             className="w-full bg-gradient-to-r from-slate-700 to-slate-800 text-white py-4 rounded-2xl font-label-bold text-base flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-lg hover:shadow-xl"
           >
-            <span className="material-symbols-outlined text-xl">qr_code_scanner</span>
-            Scan to Check-in
+            <span className="material-symbols-outlined text-xl">list_alt</span>
+            View All Desks
           </Link>
-          <p className="text-center text-xs text-gray-500 mt-3">Scan QR code at any available desk</p>
+          <p className="text-center text-xs text-gray-500 mt-3">See detailed desk list with search & filters</p>
         </div>
       </aside>
     </main>
   );
 }
-
-

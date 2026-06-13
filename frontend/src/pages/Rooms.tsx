@@ -5,30 +5,77 @@ export default function Rooms() {
   const navigate = useNavigate();
   const [selectedRoom, setSelectedRoom] = useState('G1');
   const [hoveredSlot, setHoveredSlot] = useState<{roomId: string, slotIndex: number} | null>(null);
+  const [agreed, setAgreed] = useState(false);
+  const [bookingSuccess, setBookingSuccess] = useState<string | null>(null);
+  const [selectedSlots, setSelectedSlots] = useState<Record<string, number[]>>({ G1: [3, 4] });
+  const [startTime, setStartTime] = useState('11:00');
+  const [duration, setDuration] = useState('2 hours');
   
+  const today = new Date();
+  const todayStr = today.toISOString().split('T')[0];
+  const todayDisplay = today.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
   const timeSlots = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
   const rooms = [
     { 
       id: 'G1', 
-      slots: [false, false, false, 'selected', 'selected', false, false, false, false],
       capacity: '4-6',
-      features: ['TV', 'Whiteboard', 'Windows']
+      features: ['TV', 'Whiteboard', 'Windows'],
+      bookedSlots: [] as number[],
     },
     { 
       id: 'G2', 
-      slots: [false, 'booked', false, false, false, false, false, false, false],
       capacity: '6-8',
-      features: ['Projector', 'Whiteboard', 'AC']
+      features: ['Projector', 'Whiteboard', 'AC'],
+      bookedSlots: [1],
     },
     { 
       id: 'G3', 
-      slots: ['booked', false, 'booked', false, false, false, false, false, false],
       capacity: '2-4',
-      features: ['Monitor', 'Quiet', 'Corner']
+      features: ['Monitor', 'Quiet', 'Corner'],
+      bookedSlots: [0, 2],
     },
   ];
 
   const currentRoomData = rooms.find(r => r.id === selectedRoom) || rooms[0];
+
+  const getSlotStatus = (roomId: string, slotIndex: number) => {
+    const room = rooms.find(r => r.id === roomId);
+    if (room?.bookedSlots.includes(slotIndex)) return 'booked';
+    if (selectedSlots[roomId]?.includes(slotIndex)) return 'selected';
+    return false;
+  };
+
+  const toggleSlot = (roomId: string, slotIndex: number) => {
+    const room = rooms.find(r => r.id === roomId);
+    if (room?.bookedSlots.includes(slotIndex)) return; // can't toggle booked
+    setSelectedRoom(roomId);
+    setSelectedSlots(prev => {
+      const current = prev[roomId] || [];
+      if (current.includes(slotIndex)) {
+        return { ...prev, [roomId]: current.filter(i => i !== slotIndex) };
+      } else {
+        return { ...prev, [roomId]: [...current, slotIndex].sort() };
+      }
+    });
+  };
+
+  const handleBooking = () => {
+    if (!agreed) {
+      alert('Please agree to the attendance requirement before booking.');
+      return;
+    }
+    const mySlots = selectedSlots[selectedRoom] || [];
+    if (mySlots.length === 0) {
+      alert('Please select at least one time slot on the timeline.');
+      return;
+    }
+    const slotTimes = mySlots.map(i => timeSlots[i]).join(', ');
+    setBookingSuccess(`Room ${selectedRoom} booked for ${todayDisplay} at ${slotTimes}`);
+    setTimeout(() => setBookingSuccess(null), 5000);
+  };
+
+  const selectedSlotsForRoom = selectedSlots[selectedRoom] || [];
 
   return (
     <main className="flex-1 md:ml-64 mb-20 md:mb-0 overflow-y-auto bg-gray-50">
@@ -55,7 +102,7 @@ export default function Rooms() {
             </div>
             <div>
               <p className="text-xs font-semibold text-gray-500 uppercase">Today</p>
-              <p className="text-sm font-bold text-gray-900">Oct 27, 2023</p>
+              <p className="text-sm font-bold text-gray-900">{todayDisplay}</p>
             </div>
           </div>
         </div>
@@ -124,16 +171,18 @@ export default function Rooms() {
                       
                       {/* Time Slots */}
                       <div className="flex-1 grid grid-cols-9 gap-2">
-                        {room.slots.map((slot, i) => (
+                        {timeSlots.map((_, i) => {
+                          const slotStatus = getSlotStatus(room.id, i);
+                          return (
                           <div
                             key={i}
                             onMouseEnter={() => setHoveredSlot({ roomId: room.id, slotIndex: i })}
                             onMouseLeave={() => setHoveredSlot(null)}
-                            onClick={() => !slot && setSelectedRoom(room.id)}
+                            onClick={() => toggleSlot(room.id, i)}
                             className={`h-16 rounded-xl cursor-pointer transition-all relative group/slot ${
-                              slot === 'selected' 
+                              slotStatus === 'selected' 
                                 ? 'bg-gradient-to-br from-slate-700 to-slate-800 shadow-lg scale-110 ring-2 ring-slate-400' 
-                                : slot === 'booked' 
+                                : slotStatus === 'booked' 
                                 ? 'bg-gray-200 cursor-not-allowed opacity-75' 
                                 : 'bg-gray-50 border-2 border-gray-200 hover:border-slate-400 hover:bg-slate-50 hover:scale-110 hover:shadow-md'
                             }`}
@@ -147,20 +196,21 @@ export default function Rooms() {
                                 </div>
                               </div>
                             )}
-                            {slot === 'selected' && (
+                            {slotStatus === 'selected' && (
                               <div className="absolute inset-0 flex items-center justify-center">
                                 <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center backdrop-blur-sm">
                                   <span className="material-symbols-outlined text-white text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>check</span>
                                 </div>
                               </div>
                             )}
-                            {slot === 'booked' && (
+                            {slotStatus === 'booked' && (
                               <div className="absolute inset-0 flex items-center justify-center">
                                 <span className="material-symbols-outlined text-gray-400 text-sm">block</span>
                               </div>
                             )}
                           </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                     
@@ -244,7 +294,7 @@ export default function Rooms() {
               </label>
               <input 
                 type="date" 
-                defaultValue="2023-10-27" 
+                defaultValue={todayStr} 
                 className="w-full px-4 py-3.5 rounded-xl border border-gray-200 hover:border-slate-300 focus:border-slate-600 focus:ring-2 focus:ring-slate-200 outline-none transition-all font-medium"
               />
             </div>
@@ -255,10 +305,12 @@ export default function Rooms() {
                   <span className="material-symbols-outlined text-slate-700 text-sm">schedule</span>
                   Start
                 </label>
-                <select className="w-full px-4 py-3.5 rounded-xl border border-gray-200 hover:border-slate-300 focus:border-slate-600 focus:ring-2 focus:ring-slate-200 outline-none transition-all font-medium bg-white">
-                  <option>11:00</option>
-                  <option>12:00</option>
-                  <option>13:00</option>
+                <select 
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                  className="w-full px-4 py-3.5 rounded-xl border border-gray-200 hover:border-slate-300 focus:border-slate-600 focus:ring-2 focus:ring-slate-200 outline-none transition-all font-medium bg-white"
+                >
+                  {timeSlots.map(t => <option key={t}>{t}</option>)}
                 </select>
               </div>
               <div>
@@ -266,9 +318,13 @@ export default function Rooms() {
                   <span className="material-symbols-outlined text-slate-700 text-sm">hourglass_empty</span>
                   Duration
                 </label>
-                <select className="w-full px-4 py-3.5 rounded-xl border border-gray-200 hover:border-slate-300 focus:border-slate-600 focus:ring-2 focus:ring-slate-200 outline-none transition-all font-medium bg-white">
-                  <option>2 hours</option>
+                <select 
+                  value={duration}
+                  onChange={(e) => setDuration(e.target.value)}
+                  className="w-full px-4 py-3.5 rounded-xl border border-gray-200 hover:border-slate-300 focus:border-slate-600 focus:ring-2 focus:ring-slate-200 outline-none transition-all font-medium bg-white"
+                >
                   <option>1 hour</option>
+                  <option>2 hours</option>
                   <option>3 hours</option>
                 </select>
               </div>
@@ -284,7 +340,7 @@ export default function Rooms() {
               <div className="flex-1">
                 <p className="text-xs font-bold text-slate-900 mb-1">Your Booking</p>
                 <p className="text-sm text-slate-700 leading-relaxed">
-                  Room {selectedRoom} · Oct 27 · 11:00-13:00 (2h)
+                  Room {selectedRoom} · {todayDisplay} · {selectedSlotsForRoom.length > 0 ? selectedSlotsForRoom.map(i => timeSlots[i]).join(', ') : 'No slots selected'}
                 </p>
               </div>
             </div>
@@ -294,6 +350,8 @@ export default function Rooms() {
           <label className="flex items-start gap-3 mb-6 cursor-pointer group p-3 rounded-xl hover:bg-gray-50 transition-all">
             <input 
               type="checkbox" 
+              checked={agreed}
+              onChange={(e) => setAgreed(e.target.checked)}
               className="mt-0.5 w-5 h-5 rounded-md border-2 border-gray-300 text-slate-700 focus:ring-slate-500 focus:ring-2 transition-all cursor-pointer"
             />
             <span className="text-sm text-gray-600 leading-relaxed group-hover:text-gray-800 transition-colors">
@@ -302,7 +360,18 @@ export default function Rooms() {
           </label>
 
           {/* Book Button */}
-          <button className="w-full bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] flex items-center justify-center gap-2 group">
+          {bookingSuccess && (
+            <div className="mb-4 bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-start gap-3">
+              <span className="material-symbols-outlined text-emerald-600">check_circle</span>
+              <p className="text-sm text-emerald-800 font-medium">{bookingSuccess}</p>
+            </div>
+          )}
+
+          <button 
+            onClick={handleBooking}
+            disabled={!agreed || selectedSlotsForRoom.length === 0}
+            className="w-full bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+          >
             <span>Confirm Booking</span>
             <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
           </button>
