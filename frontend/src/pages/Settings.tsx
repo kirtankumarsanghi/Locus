@@ -6,11 +6,11 @@ export default function Settings() {
   const [hasChanges, setHasChanges] = useState(false);
 
   return (
-    <main className="flex-1 md:ml-72 p-6 md:p-8 mx-auto mb-20 md:mb-0 overflow-y-auto bg-gradient-to-br from-indigo-50/30 via-white to-purple-50/30">
+    <main className="flex-1 md:ml-64 p-6 md:p-8 mx-auto mb-20 md:mb-0 overflow-y-auto bg-gray-50">
       {/* Back Button */}
       <button 
         onClick={() => navigate(-1)}
-        className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 transition-all mb-6 group"
+        className="flex items-center gap-2 text-slate-700 hover:text-slate-900 transition-all mb-6 group"
       >
         <span className="material-symbols-outlined group-hover:-translate-x-1 transition-transform">arrow_back</span>
         <span className="font-semibold">Back</span>
@@ -33,9 +33,9 @@ export default function Settings() {
       </div>
 
       {/* General Settings */}
-      <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow mb-8">
-        <div className="flex items-center gap-3 mb-6 pb-6 border-b-2 border-gray-100">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
+      <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm mb-8">
+        <div className="flex items-center gap-3 mb-6 pb-6 border-b border-gray-200">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center shadow-md">
             <span className="material-symbols-outlined text-white text-xl">settings</span>
           </div>
           <div>
@@ -46,40 +46,40 @@ export default function Settings() {
         <div className="space-y-5">
           <div>
             <label className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-2">
-              <span className="material-symbols-outlined text-indigo-600 text-sm">domain</span>
+              <span className="material-symbols-outlined text-slate-700 text-sm">domain</span>
               Library Name
             </label>
             <input 
               type="text" 
               defaultValue="Main Library" 
               onChange={() => setHasChanges(true)}
-              className="w-full px-4 py-3.5 bg-white border-2 border-gray-200 hover:border-indigo-200 rounded-xl text-gray-900 font-medium focus:outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 transition-all shadow-sm"
+              className="w-full px-4 py-3.5 bg-white border border-gray-200 hover:border-slate-300 rounded-xl text-gray-900 font-medium focus:outline-none focus:border-slate-600 focus:ring-2 focus:ring-slate-200 transition-all"
             />
           </div>
 
           <div>
             <label className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-2">
-              <span className="material-symbols-outlined text-indigo-600 text-sm">location_on</span>
+              <span className="material-symbols-outlined text-slate-700 text-sm">location_on</span>
               Location
             </label>
             <input 
               type="text" 
               defaultValue="Main Campus" 
               onChange={() => setHasChanges(true)}
-              className="w-full px-4 py-3.5 bg-white border-2 border-gray-200 hover:border-indigo-200 rounded-xl text-gray-900 font-medium focus:outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 transition-all shadow-sm"
+              className="w-full px-4 py-3.5 bg-white border border-gray-200 hover:border-slate-300 rounded-xl text-gray-900 font-medium focus:outline-none focus:border-slate-600 focus:ring-2 focus:ring-slate-200 transition-all"
             />
           </div>
 
           <div>
             <label className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-2">
-              <span className="material-symbols-outlined text-indigo-600 text-sm">counter_1</span>
+              <span className="material-symbols-outlined text-slate-700 text-sm">counter_1</span>
               Total Desks
             </label>
             <input 
               type="number" 
               defaultValue="120" 
               onChange={() => setHasChanges(true)}
-              className="w-full px-4 py-3.5 bg-white border-2 border-gray-200 hover:border-indigo-200 rounded-xl text-gray-900 font-medium focus:outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 transition-all shadow-sm"
+              className="w-full px-4 py-3.5 bg-white border border-gray-200 hover:border-slate-300 rounded-xl text-gray-900 font-medium focus:outline-none focus:border-slate-600 focus:ring-2 focus:ring-slate-200 transition-all"
             />
             <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
               <span className="material-symbols-outlined text-xs">info</span>
@@ -90,9 +90,9 @@ export default function Settings() {
       </div>
 
       {/* Enforcement Rules */}
-      <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow mb-8">
-        <div className="flex items-center gap-3 mb-6 pb-6 border-b-2 border-gray-100">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg">
+      <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm mb-8">
+        <div className="flex items-center gap-3 mb-6 pb-6 border-b border-gray-200">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-md">
             <span className="material-symbols-outlined text-white text-xl">gavel</span>
           </div>
           <div>
@@ -133,7 +133,7 @@ export default function Settings() {
             </p>
           </div>
 
-          <div className="pt-4 border-t-2 border-gray-100">
+          <div className="pt-4 border-t border-gray-200">
             <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-4">Notifications & Actions</p>
             <div className="space-y-4">
               <label className="flex items-start gap-3 cursor-pointer group p-3 rounded-xl hover:bg-gray-50 transition-all">
@@ -142,7 +142,7 @@ export default function Settings() {
                   id="notifications" 
                   defaultChecked 
                   onChange={() => setHasChanges(true)}
-                  className="mt-0.5 w-5 h-5 text-indigo-600 bg-white border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 transition-all cursor-pointer"
+                  className="mt-0.5 w-5 h-5 text-slate-700 bg-white border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-slate-500 transition-all cursor-pointer"
                 />
                 <div className="flex-1">
                   <span className="text-sm font-semibold text-gray-900 group-hover:text-gray-800">Send notifications to staff</span>
@@ -156,7 +156,7 @@ export default function Settings() {
                   id="autorelease" 
                   defaultChecked 
                   onChange={() => setHasChanges(true)}
-                  className="mt-0.5 w-5 h-5 text-indigo-600 bg-white border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 transition-all cursor-pointer"
+                  className="mt-0.5 w-5 h-5 text-slate-700 bg-white border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-slate-500 transition-all cursor-pointer"
                 />
                 <div className="flex-1">
                   <span className="text-sm font-semibold text-gray-900 group-hover:text-gray-800">Enable automatic desk release</span>
@@ -169,9 +169,9 @@ export default function Settings() {
       </div>
 
       {/* Operating Hours */}
-      <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow mb-8">
-        <div className="flex items-center gap-3 mb-6 pb-6 border-b-2 border-gray-100">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-lg">
+      <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm mb-8">
+        <div className="flex items-center gap-3 mb-6 pb-6 border-b border-gray-200">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-md">
             <span className="material-symbols-outlined text-white text-xl">schedule</span>
           </div>
           <div>
@@ -214,9 +214,9 @@ export default function Settings() {
       </div>
 
       {/* QR Code Settings */}
-      <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow mb-8">
-        <div className="flex items-center gap-3 mb-6 pb-6 border-b-2 border-gray-100">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center shadow-lg">
+      <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm mb-8">
+        <div className="flex items-center gap-3 mb-6 pb-6 border-b border-gray-200">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center shadow-md">
             <span className="material-symbols-outlined text-white text-xl">qr_code</span>
           </div>
           <div>
@@ -231,7 +231,7 @@ export default function Settings() {
               id="qrRequired" 
               defaultChecked 
               onChange={() => setHasChanges(true)}
-              className="mt-0.5 w-5 h-5 text-purple-600 bg-white border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 transition-all cursor-pointer"
+              className="mt-0.5 w-5 h-5 text-slate-700 bg-white border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-slate-500 transition-all cursor-pointer"
             />
             <div className="flex-1">
               <span className="text-sm font-semibold text-gray-900 group-hover:text-gray-800">Require QR scan for check-in</span>
@@ -244,7 +244,7 @@ export default function Settings() {
               type="checkbox" 
               id="qrCheckout" 
               onChange={() => setHasChanges(true)}
-              className="mt-0.5 w-5 h-5 text-purple-600 bg-white border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 transition-all cursor-pointer"
+              className="mt-0.5 w-5 h-5 text-slate-700 bg-white border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-slate-500 transition-all cursor-pointer"
             />
             <div className="flex-1">
               <span className="text-sm font-semibold text-gray-900 group-hover:text-gray-800">Require QR scan for check-out</span>
@@ -253,7 +253,7 @@ export default function Settings() {
           </label>
         </div>
 
-        <button className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-purple-500 to-pink-600 text-white font-bold rounded-xl hover:shadow-lg transition-all hover:scale-[1.02] group">
+        <button className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-slate-700 to-slate-800 text-white font-bold rounded-xl hover:shadow-lg transition-all hover:scale-[1.02] group">
           <span className="material-symbols-outlined">qr_code_scanner</span>
           <span>Generate QR Codes</span>
           <span className="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
@@ -285,7 +285,7 @@ export default function Settings() {
           </button>
           <button 
             onClick={() => setHasChanges(false)}
-            className="flex-1 md:flex-none px-8 py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] flex items-center justify-center gap-2 group"
+            className="flex-1 md:flex-none px-8 py-3.5 bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] flex items-center justify-center gap-2 group"
           >
             <span>Save Changes</span>
             <span className="material-symbols-outlined text-sm group-hover:scale-110 transition-transform">check</span>
