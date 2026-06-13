@@ -24,7 +24,7 @@ export default function CheckIn() {
   const [scanMode, setScanMode] = useState<'quick' | 'qr' | 'manual'>('quick');
   const [cameraActive, setCameraActive] = useState(false);
   const [availableDesks, setAvailableDesks] = useState<Desk[]>([]);
-  const [selectedDesk, setSelectedDesk] = useState<Desk | null>(null);
+  const [selectedDesk, _setSelectedDesk] = useState<Desk | null>(null);
   const [loadingDesks, setLoadingDesks] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const navigate = useNavigate();
