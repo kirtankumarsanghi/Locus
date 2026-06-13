@@ -2,7 +2,6 @@
 # Exclude local development artifacts from Railway builds
 
 node_modules/
-dist/
 .env
 .env.local
 .env.development
