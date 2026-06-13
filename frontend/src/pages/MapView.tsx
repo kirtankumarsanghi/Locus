@@ -21,7 +21,7 @@ export default function MapView() {
   const fetchDesks = async (showLoading = false) => {
     if (showLoading) setIsRefreshing(true);
     try {
-      const res = await fetch(`\${API_BASE_URL}/api/desks`);
+      const res = await fetch(`${API_BASE_URL}/api/desks`);
       const data = await res.json();
       setDesks(data);
     } catch (err) {
@@ -57,7 +57,7 @@ export default function MapView() {
     }
     
     try {
-      const res = await fetch(`\${API_BASE_URL}/api/reset`, {
+      const res = await fetch(`${API_BASE_URL}/api/reset`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ deskId }),
@@ -90,7 +90,7 @@ export default function MapView() {
     }
     
     try {
-      const res = await fetch(`\${API_BASE_URL}/api/end-session`, {
+      const res = await fetch(`${API_BASE_URL}/api/end-session`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ deskId }),

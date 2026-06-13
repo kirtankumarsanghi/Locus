@@ -37,7 +37,7 @@ export default function ActiveSession() {
   const handleCheckIn = async () => {
     setError('');
     try {
-      const res = await fetch(`\${API_BASE_URL}/api/check-in`, {
+      const res = await fetch(`${API_BASE_URL}/api/check-in`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ deskNumber: parseInt(deskNumber), studentId }),
@@ -70,7 +70,7 @@ export default function ActiveSession() {
 
   const handleAway = async () => {
     try {
-      const res = await fetch(`\${API_BASE_URL}/api/away`, {
+      const res = await fetch(`${API_BASE_URL}/api/away`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionId }),
@@ -81,7 +81,7 @@ export default function ActiveSession() {
 
   const handleHere = async () => {
     try {
-      const res = await fetch(`\${API_BASE_URL}/api/here`, {
+      const res = await fetch(`${API_BASE_URL}/api/here`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionId }),

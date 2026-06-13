@@ -24,7 +24,7 @@ export default function SeatFinder() {
 
   const fetchDesks = async () => {
     try {
-      const res = await fetch(`\${API_BASE_URL}/api/desks`);
+      const res = await fetch(`${API_BASE_URL}/api/desks`);
       const data = await res.json();
       setDesks(data);
     } catch (err) {

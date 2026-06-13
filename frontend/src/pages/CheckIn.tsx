@@ -25,7 +25,7 @@ export default function CheckIn() {
     setLoading(true);
 
     try {
-      const res = await fetch(`\${API_BASE_URL}/api/check-in`, {
+      const res = await fetch(`${API_BASE_URL}/api/check-in`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ deskNumber, studentId }),
