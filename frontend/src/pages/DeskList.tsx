@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../config';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -14,7 +15,7 @@ export default function DeskList() {
 
   const fetchDesks = async () => {
     try {
-      const res = await fetch('http://localhost:4000/api/desks');
+      const res = await fetch(`\${API_BASE_URL}/api/desks`);
       const data = await res.json();
       setDesks(data);
     } catch (err) {
@@ -43,7 +44,7 @@ export default function DeskList() {
 
   const handleReset = async (deskId: number) => {
     try {
-      await fetch('http://localhost:4000/api/reset', {
+      await fetch(`\${API_BASE_URL}/api/reset`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ deskId }),
@@ -322,3 +323,5 @@ export default function DeskList() {
     </main>
   );
 }
+
+

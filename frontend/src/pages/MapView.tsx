@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../config';
 import { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -20,7 +21,7 @@ export default function MapView() {
   const fetchDesks = async (showLoading = false) => {
     if (showLoading) setIsRefreshing(true);
     try {
-      const res = await fetch('http://localhost:4000/api/desks');
+      const res = await fetch(`\${API_BASE_URL}/api/desks`);
       const data = await res.json();
       setDesks(data);
     } catch (err) {
@@ -56,7 +57,7 @@ export default function MapView() {
     }
     
     try {
-      const res = await fetch('http://localhost:4000/api/reset', {
+      const res = await fetch(`\${API_BASE_URL}/api/reset`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ deskId }),
@@ -89,7 +90,7 @@ export default function MapView() {
     }
     
     try {
-      const res = await fetch('http://localhost:4000/api/end-session', {
+      const res = await fetch(`\${API_BASE_URL}/api/end-session`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ deskId }),
@@ -115,7 +116,7 @@ export default function MapView() {
     }
   };
 
-  const handleFlagIssue = (deskId: number) => {
+  const handleFlagIssue = (_deskId: number) => {
     const issue = prompt('Describe the issue with this desk:');
     if (issue) {
       alert(`Issue flagged for Desk ${deskLabel(selectedDesk?.number || 0)}: "${issue}"\n\nStaff will be notified.`);
@@ -579,3 +580,5 @@ export default function MapView() {
     </main>
   );
 }
+
+

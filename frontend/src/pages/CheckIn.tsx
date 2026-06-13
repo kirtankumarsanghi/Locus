@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../config';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -24,7 +25,7 @@ export default function CheckIn() {
     setLoading(true);
 
     try {
-      const res = await fetch('http://localhost:4000/api/check-in', {
+      const res = await fetch(`\${API_BASE_URL}/api/check-in`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ deskNumber, studentId }),
@@ -183,3 +184,4 @@ export default function CheckIn() {
     </div>
   );
 }
+

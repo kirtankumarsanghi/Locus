@@ -1,9 +1,8 @@
-import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import Logo from './Logo';
 
 export default function StudentLayout() {
   const location = useLocation();
-  const navigate = useNavigate();
 
   const navItems = [
     { path: '/student', label: 'Dashboard', icon: 'dashboard' },

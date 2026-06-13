@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../config';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { currentUser } from '../data/mockStudent';
@@ -21,7 +22,7 @@ export default function StudentDashboard() {
 
   const fetchDesks = async () => {
     try {
-      const res = await fetch('http://localhost:4000/api/desks');
+      const res = await fetch(`\${API_BASE_URL}/api/desks`);
       const data = await res.json();
       setDesks(data);
     } catch (err) {
@@ -232,4 +233,6 @@ export default function StudentDashboard() {
     </div>
   );
 }
+
+
 

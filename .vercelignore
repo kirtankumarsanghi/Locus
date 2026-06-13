@@ -1,0 +1,11 @@
+node_modules
+.git
+backend
+*.db
+*.db-shm
+*.db-wal
+.env.local
+.vscode
+README.md
+design.md
+*.backup
