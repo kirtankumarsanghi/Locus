@@ -1,139 +1,189 @@
 import { API_BASE_URL } from '../config';
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useSocket } from '../context/SocketContext';
+import { useAuth } from '../context/AuthContext';
 import Logo from '../components/Logo';
 
+interface SessionData {
+  id: number;
+  desk_id: number;
+  desk_label: string;
+  status: 'ACTIVE' | 'ENDED';
+  start_time: string;
+  away_start_time: string | null;
+  last_check_in_time: string;
+}
+
 export default function ActiveSession() {
-  const [deskNumber, setDeskNumber] = useState('');
-  const [studentId, setStudentId] = useState('');
-  const [sessionId, setSessionId] = useState<number | null>(null);
+  const { socket } = useSocket();
+  const { user } = useAuth();
+  const [session, setSession] = useState<SessionData | null>(null);
   const [status, setStatus] = useState<'IDLE' | 'OCCUPIED' | 'AWAY'>('IDLE');
-  const [error, setError] = useState('');
-  const [timeLeft, setTimeLeft] = useState(2700);
+  // const [error, setError] = useState('');
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const [loading, setLoading] = useState(true);
+
   const circleRef = useRef<SVGCircleElement>(null);
   const navigate = useNavigate();
 
+  // Fetch active session on mount
   useEffect(() => {
-    if (status !== 'IDLE') {
-      const timer = setInterval(() => {
-        setTimeLeft(prev => (prev > 0 ? prev - 1 : 0));
-      }, 1000);
-      return () => clearInterval(timer);
+    if (user?.student_id) {
+      fetchActiveSession();
     }
-  }, [status]);
+  }, [user]);
 
+  const fetchActiveSession = async () => {
+    if (!user?.student_id) return;
+    
+    try {
+      setLoading(true);
+      const res = await fetch(`${API_BASE_URL}/api/student/${user.student_id}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.student.active_session) {
+          setSession(data.student.active_session);
+          
+          // Determine status based on away_start_time
+          if (data.student.active_session.away_start_time) {
+            setStatus('AWAY');
+          } else {
+            setStatus('OCCUPIED');
+          }
+        } else {
+          setStatus('IDLE');
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch active session', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Update elapsed time every second
+  useEffect(() => {
+    if (session && status !== 'IDLE') {
+      const updateElapsed = () => {
+        const timeToUse = status === 'AWAY' && session.away_start_time
+          ? session.away_start_time
+          : session.start_time;
+        const elapsed = Math.floor((Date.now() - new Date(timeToUse).getTime()) / 1000);
+        setElapsedTime(elapsed);
+      };
+      
+      updateElapsed();
+      const interval = setInterval(updateElapsed, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [session, status]);
+
+  // Update circular progress indicator
   useEffect(() => {
     if (circleRef.current && status !== 'IDLE') {
       const radius = 54;
       const circumference = radius * 2 * Math.PI;
-      const maxTime = status === 'AWAY' ? 1200 : 2700;
-      const percent = (timeLeft / maxTime) * 100;
-import { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import Logo from '../components/Logo';
-
-export default function ActiveSession() {
-  const [deskNumber, setDeskNumber] = useState('');
-  const [studentId, setStudentId] = useState('');
-  const [sessionId, setSessionId] = useState<number | null>(null);
-  const [status, setStatus] = useState<'IDLE' | 'OCCUPIED' | 'AWAY'>('IDLE');
-  const [error, setError] = useState('');
-  const [timeLeft, setTimeLeft] = useState(2700);
-  const circleRef = useRef<SVGCircleElement>(null);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (status !== 'IDLE') {
-      const timer = setInterval(() => {
-        setTimeLeft(prev => (prev > 0 ? prev - 1 : 0));
-      }, 1000);
-      return () => clearInterval(timer);
-    }
-  }, [status]);
-
-  useEffect(() => {
-    if (circleRef.current && status !== 'IDLE') {
-      const radius = 54;
-      const circumference = radius * 2 * Math.PI;
-      const maxTime = status === 'AWAY' ? 1200 : 2700;
-      const percent = (timeLeft / maxTime) * 100;
+      const maxTime = status === 'AWAY' ? 1200 : 7200; // 20min away, 120min active
+      const percent = Math.min((elapsedTime / maxTime) * 100, 100);
       const offset = circumference - (percent / 100) * circumference;
       circleRef.current.style.strokeDasharray = `${circumference} ${circumference}`;
       circleRef.current.style.strokeDashoffset = `${offset}`;
     }
-  }, [timeLeft, status]);
+  }, [elapsedTime, status]);
 
-  const handleCheckIn = async () => {
-    setError('');
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/check-in`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ deskNumber, studentId }),
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setSessionId(data.sessionId);
-        navigate('/checkin-success', { state: { deskNumber, sessionId: data.sessionId } });
-      } else {
-        setError(data.error || 'Failed to check in');
-      }
-    } catch (err) {
-      setError('Network error. Backend might be unavailable.');
-    }
-  };
-
-  // Check if we're returning from checkin-success
+  // Listen for session events
   useEffect(() => {
-    const stored = sessionStorage.getItem('activeSession');
-    if (stored) {
-      const data = JSON.parse(stored);
-      setDeskNumber(data.deskNumber);
-      setSessionId(data.sessionId);
-      setStatus('OCCUPIED');
-      setTimeLeft(2700);
-      sessionStorage.removeItem('activeSession');
-    }
-  }, []);
+    if (!socket || !session) return;
+
+    const handleSessionUpdate = (data: any) => {
+      if (data.sessionId === session.id) {
+        fetchActiveSession();
+      }
+    };
+
+    const handleSessionExpired = (data: { sessionId: number }) => {
+      if (data.sessionId === session.id) {
+        alert('Your session has expired due to inactivity.');
+        setSession(null);
+        setStatus('IDLE');
+      }
+    };
+
+    socket.on('session:away', handleSessionUpdate);
+    socket.on('session:back', handleSessionUpdate);
+    socket.on('session:checkout', handleSessionUpdate);
+    socket.on('session:ended', handleSessionUpdate);
+    socket.on('session:expired', handleSessionExpired);
+
+    return () => {
+      socket.off('session:away', handleSessionUpdate);
+      socket.off('session:back', handleSessionUpdate);
+      socket.off('session:checkout', handleSessionUpdate);
+      socket.off('session:ended', handleSessionUpdate);
+      socket.off('session:expired', handleSessionExpired);
+    };
+  }, [socket, session]);
 
   const handleAway = async () => {
+    if (!session) return;
     try {
       const res = await fetch(`${API_BASE_URL}/api/away`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId }),
+        body: JSON.stringify({ sessionId: session.id }),
       });
-      if (res.ok) { setStatus('AWAY'); setTimeLeft(1200); }
-    } catch (err) {}
+      if (res.ok) {
+        setStatus('AWAY');
+        fetchActiveSession();
+      }
+    } catch (err) {
+      console.error('Failed to mark as away', err);
+    }
   };
 
   const handleHere = async () => {
+    if (!session) return;
     try {
       const res = await fetch(`${API_BASE_URL}/api/here`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId }),
+        body: JSON.stringify({ sessionId: session.id }),
       });
-      if (res.ok) { setStatus('OCCUPIED'); setTimeLeft(2700); }
-    } catch (err) {}
+      if (res.ok) {
+        setStatus('OCCUPIED');
+        fetchActiveSession();
+      }
+    } catch (err) {
+      console.error('Failed to mark as back', err);
+    }
   };
 
   const handleEnd = async () => {
+    if (!session) return;
+    if (!confirm('Are you sure you want to end your session?')) return;
+    
     try {
       await fetch(`${API_BASE_URL}/api/checkout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId }),
+        body: JSON.stringify({ sessionId: session.id }),
       });
-    } catch (err) {}
-    setSessionId(null);
-    setStatus('IDLE');
-    setDeskNumber('');
-    setStudentId('');
-    navigate('/student');
+      setSession(null);
+      setStatus('IDLE');
+      navigate('/student');
+    } catch (err) {
+      console.error('Failed to end session', err);
+    }
   };
 
-  const formatTime = (s: number) => `${Math.floor(s / 60).toString().padStart(2, '0')}:${(s % 60).toString().padStart(2, '0')}`;
+  const formatTime = (seconds: number) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    if (h > 0) return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  };
 
   return (
     <div className="bg-surface text-on-surface min-h-screen flex flex-col">
@@ -160,33 +210,34 @@ export default function ActiveSession() {
       <main className="flex-grow pt-[80px] pb-[80px] md:pb-0 px-gutter md:px-lg max-w-container-max mx-auto w-full flex flex-col md:flex-row gap-lg">
         <div className="w-full max-w-2xl mx-auto flex flex-col gap-lg mt-lg">
 
-          {status === 'IDLE' ? (
-            /* Check-in Form */
+          {loading ? (
+            <div className="flex items-center justify-center py-20">
+              <div className="text-center">
+                <div className="w-16 h-16 border-4 border-gray-200 border-t-slate-700 rounded-full animate-spin mx-auto mb-4"></div>
+                <p className="text-gray-600">Loading session...</p>
+              </div>
+            </div>
+          ) : status === 'IDLE' ? (
+            /* No Active Session */
             <div className="bg-surface-container-lowest border border-outline-variant shadow-lg rounded-2xl p-xl flex flex-col items-center text-center relative overflow-hidden">
               <div className="absolute top-0 right-0 w-48 h-48 bg-primary/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
-              <span className="material-symbols-outlined text-primary mb-lg" style={{ fontSize: '48px' }}>qr_code_scanner</span>
-              <h1 className="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-on-surface mb-xs tracking-tight">Scan to Check-in</h1>
-              <p className="font-body-base text-body-base text-on-surface-variant mb-xl">Enter your desk number and student ID to begin your session.</p>
+              <span className="material-symbols-outlined text-primary mb-lg" style={{ fontSize: '48px' }}>event_seat</span>
+              <h1 className="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-on-surface mb-xs tracking-tight">No Active Session</h1>
+              <p className="font-body-base text-body-base text-on-surface-variant mb-xl">You don't have an active study session right now.</p>
 
-              {error && (
-                <div className="w-full bg-error-container text-on-error-container p-sm rounded-lg flex items-start gap-sm border border-error/20 shadow-sm mb-lg">
-                  <span className="material-symbols-outlined mt-0.5" style={{ fontVariationSettings: "'FILL' 1" }}>warning</span>
-                  <p className="font-label-bold text-label-bold">{error}</p>
-                </div>
-              )}
-
-              <div className="w-full space-y-md text-left">
-                <div>
-                  <label className="block font-label-bold text-label-bold text-on-surface-variant mb-1 uppercase tracking-wider">Desk Number</label>
-                  <input type="number" value={deskNumber} onChange={e => setDeskNumber(e.target.value)} className="w-full border border-outline-variant rounded-lg p-3 bg-surface font-body-base text-body-base text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" placeholder="e.g. 1" />
-                </div>
-                <div>
-                  <label className="block font-label-bold text-label-bold text-on-surface-variant mb-1 uppercase tracking-wider">Student ID</label>
-                  <input type="text" value={studentId} onChange={e => setStudentId(e.target.value)} className="w-full border border-outline-variant rounded-lg p-3 bg-surface font-body-base text-body-base text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" placeholder="e.g. S-123456" />
-                </div>
-                <button onClick={handleCheckIn} className="w-full bg-primary hover:bg-primary/90 text-on-primary py-lg px-lg rounded-xl font-headline-md text-headline-md transition-all duration-300 flex items-center justify-center gap-sm shadow-md hover:shadow-lg transform hover:-translate-y-0.5 mt-md">
-                  <span className="material-symbols-outlined">login</span> Start Session
-                </button>
+              <div className="w-full space-y-md">
+                <Link
+                  to="/student/checkin"
+                  className="w-full bg-primary hover:bg-primary/90 text-on-primary py-lg px-lg rounded-xl font-headline-md text-headline-md transition-all duration-300 flex items-center justify-center gap-sm shadow-md hover:shadow-lg transform hover:-translate-y-0.5 block"
+                >
+                  <span className="material-symbols-outlined">qr_code_scanner</span> Check In Now
+                </Link>
+                <Link
+                  to="/student/seats"
+                  className="w-full bg-surface hover:bg-surface-container text-primary py-lg px-lg rounded-xl font-headline-md text-headline-md transition-all duration-300 flex items-center justify-center gap-sm border-2 border-primary/20 hover:border-primary/40 shadow-sm hover:shadow-md block"
+                >
+                  <span className="material-symbols-outlined">search</span> Find Available Desk
+                </Link>
               </div>
             </div>
           ) : (
@@ -210,8 +261,8 @@ export default function ActiveSession() {
                   <span className="font-label-bold text-label-bold uppercase tracking-wider text-primary">{status === 'AWAY' ? 'Away' : 'Active Session'}</span>
                 </div>
 
-                <h1 className="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-on-surface mb-xs tracking-tight">Desk #{deskNumber}</h1>
-                <p className="font-body-base text-body-base text-on-surface-variant mb-xl">Main Library, 2nd Floor Quiet Zone</p>
+                <h1 className="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-on-surface mb-xs tracking-tight">{session?.desk_label}</h1>
+                <p className="font-body-base text-body-base text-on-surface-variant mb-xl">Main Library · Active Study Session</p>
 
                 {/* Timer Circle */}
                 <div className="relative w-56 h-56 mb-xl flex items-center justify-center">
@@ -220,8 +271,8 @@ export default function ActiveSession() {
                     <circle ref={circleRef} className="text-primary stroke-current progress-ring__circle" cx="60" cy="60" fill="transparent" r="54" strokeDasharray="339.292" strokeDashoffset="0" strokeLinecap="round" strokeWidth="6"></circle>
                   </svg>
                   <div className="absolute flex flex-col items-center">
-                    <span className="text-4xl font-bold font-mono-timer text-primary mb-1 tracking-tight">{formatTime(timeLeft)}</span>
-                    <span className="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider">{status === 'AWAY' ? 'Until Abandoned' : 'Until Next Prompt'}</span>
+                    <span className="text-4xl font-bold font-mono-timer text-primary mb-1 tracking-tight">{formatTime(elapsedTime)}</span>
+                    <span className="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider">Elapsed Time</span>
                   </div>
                 </div>
 

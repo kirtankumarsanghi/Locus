@@ -1,56 +1,84 @@
-import { API_BASE_URL } from '../config';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useRealTimeDesks } from '../hooks/useRealTimeDesks';
+import { API_BASE_URL } from '../config';
 
 interface Desk {
   id: number;
   number: number;
+  label: string;
+  zone: string;
+  floor: number;
   status: 'FREE' | 'OCCUPIED' | 'AWAY' | 'ABANDONED';
   current_session_id: number | null;
 }
 
+interface Session {
+  start_time: string;
+  away_start_time: string | null;
+}
+
 export default function SeatFinder() {
-  const [desks, setDesks] = useState<Desk[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { desks, loading } = useRealTimeDesks();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [zoneFilter, setZoneFilter] = useState('All');
+  const [floorFilter, setFloorFilter] = useState('All');
+  const [sessionData, setSessionData] = useState<Record<number, Session>>({});
   const navigate = useNavigate();
 
+  // Fetch session details for occupied desks
   useEffect(() => {
-    fetchDesks();
-    const interval = setInterval(fetchDesks, 5000);
-    return () => clearInterval(interval);
-  }, []);
+    const occupiedDesks = desks.filter(d => d.current_session_id && d.status !== 'FREE');
+    occupiedDesks.forEach(desk => {
+      if (desk.current_session_id && !sessionData[desk.id]) {
+        fetchSessionTime(desk.id, desk.current_session_id);
+      }
+    });
+  }, [desks]);
 
-  const fetchDesks = async () => {
+  const fetchSessionTime = async (deskId: number, sessionId: number) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/desks`);
+      const res = await fetch(`${API_BASE_URL}/api/sessions/${sessionId}`);
       if (res.ok) {
         const data = await res.json();
-        setDesks(data);
+        setSessionData(prev => ({
+          ...prev,
+          [deskId]: data
+        }));
       }
     } catch (err) {
-      console.error('Failed to fetch desks', err);
-    } finally {
-      setLoading(false);
+      console.error('Failed to fetch session time', err);
     }
   };
 
-
-
-  const deskLabel = (num: number) => {
-    if (num <= 4) return `A-${(11 + num).toString().padStart(2, '0')}`;
-    return `B-${(num - 4).toString().padStart(2, '0')}`;
-  };
-
   const filteredDesks = desks.filter((desk) => {
-    const label = deskLabel(desk.number);
-    const matchesSearch = label.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch = desk.label.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = statusFilter === 'All' || desk.status === statusFilter;
-    return matchesSearch && matchesStatus;
+    const matchesZone = zoneFilter === 'All' || desk.zone === zoneFilter;
+    const matchesFloor = floorFilter === 'All' || desk.floor.toString() === floorFilter;
+    return matchesSearch && matchesStatus && matchesZone && matchesFloor;
   });
 
   const availableDesks = filteredDesks.filter(d => d.status === 'FREE');
+  const zones = Array.from(new Set(desks.map(d => d.zone)));
+  const floors = Array.from(new Set(desks.map(d => d.floor))).sort();
+
+  const getElapsedTime = (deskId: number, status: string) => {
+    const session = sessionData[deskId];
+    if (!session) return null;
+
+    const timeToUse = status === 'AWAY' && session.away_start_time 
+      ? session.away_start_time 
+      : session.start_time;
+    
+    const elapsed = Math.floor((Date.now() - new Date(timeToUse).getTime()) / (1000 * 60));
+    
+    if (elapsed < 60) return `${elapsed}m`;
+    const hours = Math.floor(elapsed / 60);
+    const mins = elapsed % 60;
+    return `${hours}h ${mins}m`;
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -74,11 +102,7 @@ export default function SeatFinder() {
 
   const handleReserve = (desk: Desk) => {
     if (desk.status !== 'FREE') return;
-    
-    if (confirm(`Reserve Desk ${deskLabel(desk.number)}?\n\nYou'll need to scan the QR code at the desk within 5 minutes to confirm.`)) {
-      alert(`Desk ${deskLabel(desk.number)} reserved!\n\nPlease proceed to the desk and scan the QR code to check in.`);
-      navigate('/student/checkin', { state: { prefillDesk: deskLabel(desk.number) } });
-    }
+    navigate('/student/checkin', { state: { prefillDesk: desk.label } });
   };
 
   return (
@@ -135,7 +159,7 @@ export default function SeatFinder() {
         </div>
 
         {/* Filters */}
-        <div className="flex flex-col md:flex-row gap-4 mb-6">
+        <div className="flex flex-col gap-4 mb-6">
           <div className="flex-1 relative">
             <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">search</span>
             <input
@@ -147,17 +171,54 @@ export default function SeatFinder() {
             />
           </div>
 
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-3 border border-gray-200 rounded-xl bg-white text-gray-900 focus:border-slate-400 focus:ring-2 focus:ring-slate-200 outline-none transition-all cursor-pointer"
-          >
-            <option value="All">All Statuses</option>
-            <option value="FREE">Available Only</option>
-            <option value="OCCUPIED">Occupied</option>
-            <option value="AWAY">Away</option>
-            <option value="ABANDONED">Abandoned</option>
-          </select>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-4 py-3 border border-gray-200 rounded-xl bg-white text-gray-900 focus:border-slate-400 focus:ring-2 focus:ring-slate-200 outline-none transition-all cursor-pointer"
+            >
+              <option value="All">All Statuses</option>
+              <option value="FREE">Available Only</option>
+              <option value="OCCUPIED">Occupied</option>
+              <option value="AWAY">Away</option>
+              <option value="ABANDONED">Abandoned</option>
+            </select>
+
+            <select
+              value={zoneFilter}
+              onChange={(e) => setZoneFilter(e.target.value)}
+              className="px-4 py-3 border border-gray-200 rounded-xl bg-white text-gray-900 focus:border-slate-400 focus:ring-2 focus:ring-slate-200 outline-none transition-all cursor-pointer"
+            >
+              <option value="All">All Zones</option>
+              {zones.map(zone => (
+                <option key={zone} value={zone}>{zone}</option>
+              ))}
+            </select>
+
+            <select
+              value={floorFilter}
+              onChange={(e) => setFloorFilter(e.target.value)}
+              className="px-4 py-3 border border-gray-200 rounded-xl bg-white text-gray-900 focus:border-slate-400 focus:ring-2 focus:ring-slate-200 outline-none transition-all cursor-pointer"
+            >
+              <option value="All">All Floors</option>
+              {floors.map(floor => (
+                <option key={floor} value={floor}>Floor {floor}</option>
+              ))}
+            </select>
+
+            <button
+              onClick={() => {
+                setSearch('');
+                setStatusFilter('All');
+                setZoneFilter('All');
+                setFloorFilter('All');
+              }}
+              className="px-4 py-3 border border-gray-200 rounded-xl bg-white text-gray-700 hover:bg-gray-50 font-medium transition-all flex items-center justify-center gap-2"
+            >
+              <span className="material-symbols-outlined text-lg">clear_all</span>
+              Clear
+            </button>
+          </div>
         </div>
 
         {/* Desk Cards Grid */}
@@ -175,8 +236,11 @@ export default function SeatFinder() {
             <p className="text-gray-600">Try adjusting your search or filters</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filteredDesks.map((desk) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {filteredDesks.map((desk) => {
+              const elapsedTime = getElapsedTime(desk.id, desk.status);
+              
+              return (
               <div
                 key={desk.id}
                 className={`bg-white border-2 rounded-2xl p-6 shadow-sm transition-all ${
@@ -189,10 +253,10 @@ export default function SeatFinder() {
                 <div className="flex items-start justify-between mb-4">
                   <div>
                     <h3 className="text-2xl font-bold text-gray-900">
-                      {deskLabel(desk.number)}
+                      {desk.label}
                     </h3>
                     <p className="text-sm text-gray-600 mt-1">
-                      {desk.number <= 4 ? 'Main Hall · Floor 2' : 'Main Hall · Floor 2'}
+                      {desk.zone} · Floor {desk.floor}
                     </p>
                   </div>
                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-sm ${
@@ -208,35 +272,46 @@ export default function SeatFinder() {
                 </div>
 
                 <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold border-2 ${getStatusColor(desk.status)}`}>
-                  <span className="w-2 h-2 rounded-full bg-current"></span>
+                  <span className={`w-2 h-2 rounded-full bg-current ${desk.status === 'FREE' ? 'animate-pulse' : ''}`}></span>
                   {getStatusLabel(desk.status)}
                 </div>
 
                 {desk.status === 'FREE' && (
                   <button
-                    onClick={() => handleReserve(desk)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleReserve(desk);
+                    }}
                     className="w-full mt-4 px-4 py-2.5 rounded-xl bg-gradient-to-r from-slate-700 to-slate-800 text-white font-semibold hover:opacity-90 transition-all shadow-md flex items-center justify-center gap-2"
                   >
                     <span className="material-symbols-outlined text-lg">bookmark_add</span>
-                    Reserve Desk
+                    Check In Here
                   </button>
                 )}
 
                 {desk.status === 'OCCUPIED' && (
                   <div className="mt-4 px-4 py-2.5 rounded-xl bg-gray-100 text-gray-600 font-medium text-center flex items-center justify-center gap-2">
                     <span className="material-symbols-outlined text-lg">schedule</span>
-                    In Use - 1h 45m
+                    In Use {elapsedTime ? `· ${elapsedTime}` : ''}
                   </div>
                 )}
 
                 {desk.status === 'AWAY' && (
                   <div className="mt-4 px-4 py-2.5 rounded-xl bg-amber-50 text-amber-700 font-medium text-center flex items-center justify-center gap-2">
                     <span className="material-symbols-outlined text-lg">hourglass_empty</span>
-                    Away - 12m
+                    Away {elapsedTime ? `· ${elapsedTime}` : ''}
+                  </div>
+                )}
+
+                {desk.status === 'ABANDONED' && (
+                  <div className="mt-4 px-4 py-2.5 rounded-xl bg-violet-50 text-violet-700 font-medium text-center flex items-center justify-center gap-2">
+                    <span className="material-symbols-outlined text-lg">warning</span>
+                    Needs Reset
                   </div>
                 )}
               </div>
-            ))}
+            );
+          })}
           </div>
         )}
 

@@ -32,6 +32,7 @@ export default function DeskList() {
   const [statusFilter, setStatusFilter] = useState('All');
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [selectedDesks, setSelectedDesks] = useState<Set<number>>(new Set());
 
   const fetchDesks = useCallback(async () => {
     try {
@@ -112,6 +113,43 @@ export default function DeskList() {
     }
   };
 
+  const toggleSelect = (deskId: number) => {
+    const newSet = new Set(selectedDesks);
+    if (newSet.has(deskId)) newSet.delete(deskId);
+    else newSet.add(deskId);
+    setSelectedDesks(newSet);
+  };
+
+  const handleBulkReset = async () => {
+    if (!confirm(`Reset ${selectedDesks.size} selected desks?`)) return;
+    for (const deskId of selectedDesks) {
+      try {
+        await fetch(`${API_BASE_URL}/api/reset`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ deskId }),
+        });
+      } catch (e) { console.error(e); }
+    }
+    setSelectedDesks(new Set());
+    fetchDesks();
+  };
+
+  const handleBulkEndSession = async () => {
+    if (!confirm(`End sessions for ${selectedDesks.size} selected desks?`)) return;
+    for (const deskId of selectedDesks) {
+      try {
+        await fetch(`${API_BASE_URL}/api/end-session`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ deskId }),
+        });
+      } catch (e) { console.error(e); }
+    }
+    setSelectedDesks(new Set());
+    fetchDesks();
+  };
+
   const deskLabel = (num: number) => {
     if (num <= 4) return `A-${(11 + num).toString().padStart(2, '0')}`;
     return `B-${(num - 4).toString().padStart(2, '0')}`;
@@ -162,6 +200,14 @@ export default function DeskList() {
     const matchesStatus = statusFilter === 'All' || desk.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  const toggleSelectAll = () => {
+    if (selectedDesks.size === filteredDesks.length && filteredDesks.length > 0) {
+      setSelectedDesks(new Set());
+    } else {
+      setSelectedDesks(new Set(filteredDesks.map(d => d.id)));
+    }
+  };
 
   const abandonedCount = desks.filter(d => d.status === 'ABANDONED').length;
   const awayCount = desks.filter(d => d.status === 'AWAY').length;
@@ -297,7 +343,15 @@ export default function DeskList() {
             <h2 className="text-xl font-bold text-on-surface">All Desks</h2>
             <p className="text-sm text-gray-500 mt-0.5">Live status updates · {filteredDesks.length} shown</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-col md:flex-row gap-3 items-start md:items-center">
+            {selectedDesks.size > 0 && (
+              <div className="flex items-center gap-3 bg-indigo-50 px-4 py-2 rounded-xl border border-indigo-100">
+                <span className="text-sm font-semibold text-indigo-700">{selectedDesks.size} selected</span>
+                <button onClick={handleBulkEndSession} className="px-3 py-1.5 bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-100 rounded-lg text-sm font-medium transition-colors">End Sessions</button>
+                <button onClick={handleBulkReset} className="px-3 py-1.5 bg-white border border-rose-200 text-rose-700 hover:bg-rose-50 rounded-lg text-sm font-medium transition-colors">Reset Desks</button>
+              </div>
+            )}
+            <div className="flex gap-3">
             {/* Filter Dropdown */}
             <div className="relative">
               <button 
@@ -343,11 +397,18 @@ export default function DeskList() {
             </div>
           </div>
         </div>
+        </div>
         
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
               <tr className="border-b-2 border-gray-100 bg-gray-50">
+                <th className="px-6 py-4 w-12">
+                  <input type="checkbox" 
+                         checked={selectedDesks.size > 0 && selectedDesks.size === filteredDesks.length}
+                         onChange={toggleSelectAll}
+                         className="w-4 h-4 rounded text-indigo-600 border-gray-300" />
+                </th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-600 uppercase tracking-wide">Desk</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-600 uppercase tracking-wide">Status</th>
                 <th className="px-6 py-4 text-xs font-bold text-gray-600 uppercase tracking-wide">Student</th>
@@ -359,7 +420,7 @@ export default function DeskList() {
             <tbody>
               {filteredDesks.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
                     <div className="flex flex-col items-center gap-3">
                       <span className="material-symbols-outlined text-4xl text-gray-300">search_off</span>
                       <p className="font-medium">No desks match your filters</p>
@@ -379,8 +440,14 @@ export default function DeskList() {
                     className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${
                       desk.status === 'ABANDONED' ? 'bg-rose-50/30' : 
                       desk.status === 'AWAY' ? 'bg-amber-50/20' : ''
-                    }`}
+                    } ${selectedDesks.has(desk.id) ? 'bg-indigo-50/50' : ''}`}
                   >
+                    <td className="px-6 py-4">
+                      <input type="checkbox" 
+                             checked={selectedDesks.has(desk.id)}
+                             onChange={() => toggleSelect(desk.id)}
+                             className="w-4 h-4 rounded text-indigo-600 border-gray-300" />
+                    </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold ${

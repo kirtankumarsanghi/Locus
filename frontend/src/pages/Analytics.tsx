@@ -1,69 +1,17 @@
-import { API_BASE_URL } from '../config';
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useRealTimeAnalytics } from '../hooks/useRealTimeAnalytics';
+import { useRealTimeDesks } from '../hooks/useRealTimeDesks';
 
-interface AnalyticsData {
-  desks: {
-    total: number;
-    free: number;
-    occupied: number;
-    away: number;
-    abandoned: number;
-    occupancyRate: number;
-  };
-  sessions: {
-    total: number;
-    active: number;
-  };
-}
 
-interface Desk {
-  id: number;
-  number: number;
-  label: string;
-  zone: string;
-  floor: number;
-  status: string;
-  current_session_id: number | null;
-  updated_at: string;
-}
 
 export default function Analytics() {
   const navigate = useNavigate();
-  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
-  const [desks, setDesks] = useState<Desk[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const { analytics, loading: analyticsLoading, isConnected } = useRealTimeAnalytics();
+  const { desks, loading: desksLoading } = useRealTimeDesks();
+  const [error] = useState('');
 
-  const fetchData = useCallback(async () => {
-    try {
-      const [analyticsRes, desksRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/api/analytics`),
-        fetch(`${API_BASE_URL}/api/desks`),
-      ]);
-
-      if (analyticsRes.ok) {
-        const data = await analyticsRes.json();
-        setAnalytics(data);
-      }
-      if (desksRes.ok) {
-        const data = await desksRes.json();
-        setDesks(data);
-      }
-      setError('');
-    } catch (err) {
-      console.error('Failed to fetch analytics', err);
-      setError('Unable to connect to backend. Make sure the server is running.');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchData();
-    const interval = setInterval(fetchData, 10000); // refresh every 10s
-    return () => clearInterval(interval);
-  }, [fetchData]);
+  const loading = analyticsLoading || desksLoading;
 
   const deskLabel = (num: number) => {
     if (num <= 4) return `A-${(11 + num).toString().padStart(2, '0')}`;
@@ -92,6 +40,9 @@ export default function Analytics() {
   const abandonedDesks = analytics?.desks.abandoned || 0;
   const occupancyRate = analytics?.desks.occupancyRate || 0;
   const abandonmentRate = totalDesks > 0 ? Math.round((abandonedDesks / totalDesks) * 100) : 0;
+  const avgDuration = (analytics?.sessions as any)?.avgDurationMinutes || 0;
+  const peakHours = (analytics?.sessions as any)?.peakHours || [];
+  const mostUsedDesks = (analytics?.sessions as any)?.mostUsedDesks || [];
 
   // Compute desk usage ranking from current desks data 
   const occupiedDesksList = desks
@@ -120,13 +71,18 @@ export default function Analytics() {
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Analytics & Insights</h1>
           <p className="text-gray-600 text-lg">Live data from the backend 📊</p>
         </div>
-        <button
-          onClick={fetchData}
-          className="flex items-center gap-2 px-5 py-2.5 bg-white border border-gray-200 rounded-xl text-slate-700 font-semibold text-sm hover:shadow-md transition-all"
-        >
-          <span className="material-symbols-outlined text-lg">refresh</span>
-          Refresh
-        </button>
+        <div className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border ${
+          isConnected ? 'bg-emerald-50 border-emerald-200' : 'bg-amber-50 border-amber-200'
+        }`}>
+          <span className={`w-2 h-2 rounded-full ${
+            isConnected ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'
+          }`}></span>
+          <span className={`text-sm font-semibold ${
+            isConnected ? 'text-emerald-700' : 'text-amber-700'
+          }`}>
+            {isConnected ? 'Real-time Updates Active' : 'Reconnecting...'}
+          </span>
+        </div>
       </div>
 
       {error && (
@@ -346,10 +302,10 @@ export default function Analytics() {
           <div className="bg-gradient-to-br from-slate-50 to-slate-100 border-2 border-slate-200 rounded-2xl p-6 hover:shadow-lg transition-all">
             <div className="flex items-start justify-between mb-4">
               <div className="flex-1">
-                <h3 className="text-lg font-bold text-gray-900 mb-2">Session Summary</h3>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">Session Insights</h3>
                 <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-bold text-slate-700">{totalSessions}</span>
-                  <span className="text-sm text-gray-600">total sessions recorded</span>
+                  <span className="text-4xl font-bold text-slate-700">{avgDuration}</span>
+                  <span className="text-sm text-gray-600">min avg duration</span>
                 </div>
               </div>
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center shadow-lg">
@@ -382,6 +338,69 @@ export default function Analytics() {
                 }
               </p>
             </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Historical Insights */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        {/* Most Used Desks */}
+        <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-xl font-bold text-gray-900">Most Used Desks</h2>
+              <p className="text-sm text-gray-500 mt-1">All-time most popular spots</p>
+            </div>
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-md">
+              <span className="material-symbols-outlined text-white text-lg">star</span>
+            </div>
+          </div>
+          <div className="space-y-3">
+            {mostUsedDesks.length === 0 ? (
+              <div className="text-center py-6 text-gray-500">No data available yet</div>
+            ) : mostUsedDesks.map((d: any, i: number) => (
+              <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-sm">
+                    #{i + 1}
+                  </div>
+                  <span className="font-semibold text-gray-900">Desk {deskLabel(d.number)}</span>
+                </div>
+                <span className="text-sm font-medium text-gray-600">{d.count} sessions</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Peak Hours */}
+        <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-xl font-bold text-gray-900">Peak Hours</h2>
+              <p className="text-sm text-gray-500 mt-1">Busiest check-in times</p>
+            </div>
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-md">
+              <span className="material-symbols-outlined text-white text-lg">schedule</span>
+            </div>
+          </div>
+          <div className="space-y-3">
+            {peakHours.length === 0 ? (
+              <div className="text-center py-6 text-gray-500">No data available yet</div>
+            ) : peakHours.map((p: any, i: number) => (
+              <div key={i} className="flex items-center justify-between p-3 bg-amber-50/50 rounded-xl border border-amber-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded bg-amber-100 text-amber-700 font-bold flex items-center justify-center text-sm">
+                    {p.hour}:00
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div className="h-full bg-amber-500" style={{ width: `${Math.min((p.count / Math.max(...peakHours.map((x: any) => x.count))) * 100, 100)}%`}}></div>
+                  </div>
+                  <span className="text-sm font-medium text-gray-600 w-20 text-right">{p.count} check-ins</span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>

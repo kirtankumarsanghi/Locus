@@ -1,9 +1,10 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Logo from '../components/Logo';
 
 export default function Landing() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // WebGL shader background
   useEffect(() => {
@@ -124,20 +125,56 @@ void main() {
       <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-lg h-16 glass-panel border-b border-outline-variant shadow-sm transition-all duration-300">
         <Logo variant="horizontal" showTagline={false} size={40} className="md:scale-110" />
         <div className="flex items-center gap-gutter">
-            <Link
-    to="/student"
-    className="hidden md:inline-flex items-center justify-center px-lg py-sm bg-secondary-container text-on-secondary-container font-label-bold text-label-bold rounded-full hover:opacity-90 transition-colors"
-  >
-    Student Portal
-  </Link>
+          <Link
+            to="/login"
+            className="hidden md:inline-flex items-center justify-center px-lg py-sm bg-secondary-container text-on-secondary-container font-label-bold text-label-bold rounded-full hover:opacity-90 transition-colors"
+          >
+            Student Portal
+          </Link>
 
-          <Link to="/map" className="hidden md:inline-flex items-center justify-center px-lg py-sm bg-primary text-on-primary font-label-bold text-label-bold rounded-full hover:bg-surface-tint transition-colors">
+          <Link to="/login" className="hidden md:inline-flex items-center justify-center px-lg py-sm bg-primary text-on-primary font-label-bold text-label-bold rounded-full hover:bg-surface-tint transition-colors">
             Staff Login
           </Link>
-          <button className="inline-flex items-center justify-center p-sm text-primary hover:bg-surface-container-high rounded-full transition-colors md:hidden">
-            <span className="material-symbols-outlined">menu</span>
+
+          <Link to="/login" className="hidden md:inline-flex items-center justify-center px-lg py-sm bg-surface border border-outline-variant text-primary font-label-bold text-label-bold rounded-full hover:bg-surface-container-low transition-colors">
+            Admin Login
+          </Link>
+          <button 
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="inline-flex items-center justify-center p-sm text-primary hover:bg-surface-container-high rounded-full transition-colors md:hidden"
+          >
+            <span className="material-symbols-outlined">{isMobileMenuOpen ? 'close' : 'menu'}</span>
           </button>
         </div>
+        
+        {/* Mobile Menu Dropdown */}
+        {isMobileMenuOpen && (
+          <div className="absolute top-full left-0 w-full bg-white border-b border-outline-variant shadow-lg py-4 px-6 flex flex-col gap-3 md:hidden z-50 animate-in slide-in-from-top-2">
+            <Link
+              to="/login"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="w-full inline-flex items-center justify-center px-lg py-sm bg-secondary-container text-on-secondary-container font-label-bold text-label-bold rounded-full hover:opacity-90 transition-colors"
+            >
+              Student Portal
+            </Link>
+
+            <Link 
+              to="/login" 
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="w-full inline-flex items-center justify-center px-lg py-sm bg-primary text-on-primary font-label-bold text-label-bold rounded-full hover:bg-surface-tint transition-colors"
+            >
+              Staff Login
+            </Link>
+
+            <Link 
+              to="/login" 
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="w-full inline-flex items-center justify-center px-lg py-sm bg-surface border border-outline-variant text-primary font-label-bold text-label-bold rounded-full hover:bg-surface-container-low transition-colors"
+            >
+              Admin Login
+            </Link>
+          </div>
+        )}
       </header>
 
       {/* Hero Section */}
@@ -175,7 +212,7 @@ void main() {
               Eliminate 'Ghost Reservations' and ensure fair access to study spaces with real-time occupancy tracking and automated enforcement.
             </p>
             <div className="flex flex-col sm:flex-row gap-sm pt-sm">
-              <Link to="/map" className="inline-flex items-center justify-center px-xl py-md bg-primary text-on-primary font-label-bold text-label-bold rounded-full hover:bg-surface-tint shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5">
+              <Link to="/login" className="inline-flex items-center justify-center px-xl py-md bg-primary text-on-primary font-label-bold text-label-bold rounded-full hover:bg-surface-tint shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5">
                 Explore Live Map
                 <span className="material-symbols-outlined ml-sm text-[18px]">arrow_forward</span>
               </Link>

@@ -1,11 +1,13 @@
-import { API_BASE_URL } from '../config';
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useRealTimeDesks } from '../hooks/useRealTimeDesks';
+import { API_BASE_URL } from '../config';
 
 interface Session {
   id: number;
   desk_id: number;
   student_id: string;
+  name?: string;
   status: string;
   start_time: string;
   away_start_time: string | null;
@@ -31,33 +33,12 @@ interface DeskDetail {
 
 export default function MapView() {
   const navigate = useNavigate();
-  const [desks, setDesks] = useState<Desk[]>([]);
+  const { desks, isConnected } = useRealTimeDesks();
   const [selectedDesk, setSelectedDesk] = useState<Desk | null>(null);
   const [selectedDeskDetail, setSelectedDeskDetail] = useState<DeskDetail | null>(null);
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const mapRef = useRef<HTMLDivElement>(null);
   const [isPanning, setIsPanning] = useState(false);
   const panStart = useRef({ x: 0, y: 0, scrollLeft: 0, scrollTop: 0 });
-
-  const fetchDesks = useCallback(async (showLoading = false) => {
-    if (showLoading) setIsRefreshing(true);
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/desks`);
-      if (res.ok) {
-        const data = await res.json();
-        setDesks(data);
-        // If a desk is selected, update its data
-        if (selectedDesk) {
-          const updated = data.find((d: Desk) => d.id === selectedDesk.id);
-          if (updated) setSelectedDesk(updated);
-        }
-      }
-    } catch (err) {
-      console.error('Failed to fetch desks', err);
-    } finally {
-      if (showLoading) setIsRefreshing(false);
-    }
-  }, [selectedDesk]);
 
   // Fetch desk detail when a desk is selected
   const fetchDeskDetail = useCallback(async (deskId: number) => {
@@ -70,12 +51,6 @@ export default function MapView() {
     } catch (err) {
       console.error('Failed to fetch desk detail', err);
     }
-  }, []);
-
-  useEffect(() => {
-    fetchDesks();
-    const interval = setInterval(() => fetchDesks(), 5000);
-    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -99,17 +74,9 @@ export default function MapView() {
       });
       
       if (res.ok) {
-        setDesks(prevDesks => 
-          prevDesks.map(desk => 
-            desk.id === deskId 
-              ? { ...desk, status: 'FREE' as const, current_session_id: null }
-              : desk
-          )
-        );
         setSelectedDesk(null);
         setSelectedDeskDetail(null);
         alert('Desk reset successfully!');
-        fetchDesks();
       } else {
         alert('Failed to reset desk. Please try again.');
       }
@@ -132,17 +99,9 @@ export default function MapView() {
       });
       
       if (res.ok) {
-        setDesks(prevDesks => 
-          prevDesks.map(desk => 
-            desk.id === deskId 
-              ? { ...desk, status: 'FREE' as const, current_session_id: null }
-              : desk
-          )
-        );
         setSelectedDesk(null);
         setSelectedDeskDetail(null);
         alert('Session ended successfully!');
-        fetchDesks();
       } else {
         alert('Failed to end session.');
       }
@@ -348,16 +307,16 @@ export default function MapView() {
 
             {/* Inline Stats Badges */}
             <div className="flex gap-3 items-center">
-              <button
-                onClick={() => fetchDesks(true)}
-                disabled={isRefreshing}
-                className="bg-white border border-gray-200 rounded-xl px-3 py-2 shadow-sm hover:border-slate-400 hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                title="Refresh desk status"
-              >
-                <span className={`material-symbols-outlined text-slate-700 text-lg ${isRefreshing ? 'animate-spin' : ''}`}>
-                  refresh
+              <div className={`flex items-center gap-2 bg-white border rounded-xl px-3 py-2 shadow-sm ${
+                isConnected ? 'border-emerald-200' : 'border-amber-200'
+              }`}>
+                <span className={`w-2 h-2 rounded-full ${
+                  isConnected ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'
+                }`}></span>
+                <span className="text-xs font-semibold text-gray-600">
+                  {isConnected ? 'Live Updates' : 'Reconnecting...'}
                 </span>
-              </button>
+              </div>
               <div className="bg-white border border-gray-200 rounded-xl px-4 py-2 shadow-sm">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
@@ -535,6 +494,15 @@ export default function MapView() {
               </div>
               
               <div className="space-y-3 mb-6">
+                <div className="flex justify-between py-2 px-3 bg-gray-50 rounded-lg">
+                  <span className="font-body-sm text-body-sm text-gray-600 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-sm">person</span>
+                    Student Name
+                  </span>
+                  <span className="font-body-sm text-body-sm text-on-surface font-bold truncate ml-2">
+                    {session?.name || '-'}
+                  </span>
+                </div>
                 <div className="flex justify-between py-2 px-3 bg-gray-50 rounded-lg">
                   <span className="font-body-sm text-body-sm text-gray-600 flex items-center gap-2">
                     <span className="material-symbols-outlined text-sm">badge</span>

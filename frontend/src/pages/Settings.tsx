@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '../config';
 
 export default function Settings() {
   const navigate = useNavigate();
   const [hasChanges, setHasChanges] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [libraryName, setLibraryName] = useState('Main Library');
   const [location, setLocation] = useState('Main Campus');
   const [totalDesks, setTotalDesks] = useState('8');
@@ -12,23 +14,93 @@ export default function Settings() {
   const [autoRelease, setAutoRelease] = useState('60');
   const [openTime, setOpenTime] = useState('07:00');
   const [closeTime, setCloseTime] = useState('23:00');
+  const [initialSettings, setInitialSettings] = useState<any>(null);
 
-  const handleSave = () => {
-    // In production this would POST to the backend
-    setHasChanges(false);
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 3000);
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  const fetchSettings = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/settings`);
+      if (res.ok) {
+        const data = await res.json();
+        setLibraryName(data.library_name);
+        setLocation(data.location);
+        setTotalDesks(data.total_desks.toString());
+        setAwayTimeout(data.away_timeout.toString());
+        setAutoRelease(data.auto_release.toString());
+        setOpenTime(data.open_time);
+        setCloseTime(data.close_time);
+        
+        setInitialSettings({
+          libraryName: data.library_name,
+          location: data.location,
+          totalDesks: data.total_desks.toString(),
+          awayTimeout: data.away_timeout.toString(),
+          autoRelease: data.auto_release.toString(),
+          openTime: data.open_time,
+          closeTime: data.close_time,
+        });
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      const payload = {
+        libraryName,
+        location,
+        totalDesks: parseInt(totalDesks),
+        awayTimeout: parseInt(awayTimeout),
+        autoRelease: parseInt(autoRelease),
+        openTime,
+        closeTime
+      };
+      
+      const res = await fetch(`${API_BASE_URL}/api/settings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      
+      if (res.ok) {
+        setHasChanges(false);
+        setSaveSuccess(true);
+        setInitialSettings({
+          libraryName,
+          location,
+          totalDesks,
+          awayTimeout,
+          autoRelease,
+          openTime,
+          closeTime
+        });
+        setTimeout(() => setSaveSuccess(false), 3000);
+      } else {
+        alert('Failed to save settings');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error saving settings');
+    }
   };
 
   const handleCancel = () => {
     setHasChanges(false);
-    setLibraryName('Main Library');
-    setLocation('Main Campus');
-    setTotalDesks('8');
-    setAwayTimeout('30');
-    setAutoRelease('60');
-    setOpenTime('07:00');
-    setCloseTime('23:00');
+    if (initialSettings) {
+      setLibraryName(initialSettings.libraryName);
+      setLocation(initialSettings.location);
+      setTotalDesks(initialSettings.totalDesks);
+      setAwayTimeout(initialSettings.awayTimeout);
+      setAutoRelease(initialSettings.autoRelease);
+      setOpenTime(initialSettings.openTime);
+      setCloseTime(initialSettings.closeTime);
+    }
   };
 
   const handleGenerateQR = () => {
@@ -36,11 +108,16 @@ export default function Settings() {
   };
 
   const computeHours = () => {
+    if (!openTime || !closeTime) return 0;
     const [oh, om] = openTime.split(':').map(Number);
     const [ch, cm] = closeTime.split(':').map(Number);
     const diff = (ch * 60 + cm) - (oh * 60 + om);
     return diff > 0 ? Math.round(diff / 60) : 0;
   };
+
+  if (loading) {
+    return <div className="flex items-center justify-center h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900"></div></div>;
+  }
 
   return (
     <main className="flex-1 md:ml-64 p-6 md:p-8 mx-auto mb-20 md:mb-0 overflow-y-auto bg-gray-50">

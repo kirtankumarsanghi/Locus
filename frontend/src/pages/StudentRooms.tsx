@@ -1,17 +1,22 @@
 import { useState, useEffect } from 'react';
-import { API_BASE_URL } from '../config';
-import { useSocket } from '../context/SocketContext';
-import { useAuth } from '../context/AuthContext';
 
-export default function Rooms() {
-  const { socket } = useSocket();
+import { API_BASE_URL } from '../config';
+import { useAuth } from '../context/AuthContext';
+import { useSocket } from '../context/SocketContext';
+
+export default function StudentRooms() {
+  
   const { user } = useAuth();
+  const { socket } = useSocket();
+  
   const [selectedRoom, setSelectedRoom] = useState<number | null>(null);
   const [hoveredSlot, setHoveredSlot] = useState<{roomId: number, slotIndex: number} | null>(null);
+  const [agreed, setAgreed] = useState(false);
+  const [bookingSuccess, setBookingSuccess] = useState<string | null>(null);
   const [selectedSlots, setSelectedSlots] = useState<Record<number, number[]>>({});
   
   const [rooms, setRooms] = useState<any[]>([]);
-  const [bookings, setBookings] = useState<any[]>([]);
+  const [myBookings, setMyBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   
   const today = new Date();
@@ -22,7 +27,7 @@ export default function Rooms() {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     if (!socket) return;
@@ -31,25 +36,22 @@ export default function Rooms() {
     return () => {
       socket.off('room:booking_updated', handleUpdate);
     };
-  }, [socket]);
+  }, [socket, user]);
 
   const fetchData = async () => {
     setLoading(true);
+    await Promise.all([fetchRooms(), fetchMyBookings()]);
+    setLoading(false);
+  };
+
+  const fetchRooms = async () => {
     try {
-      const [roomsRes, bookingsRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/api/rooms`),
-        fetch(`${API_BASE_URL}/api/rooms/bookings`)
-      ]);
-      
-      if (roomsRes.ok && bookingsRes.ok) {
-        const roomsData = await roomsRes.json();
-        const bookingsData = await bookingsRes.json();
-        
-        const bks = bookingsData.bookings || [];
-        setBookings(bks);
-        
-        const roomsWithBookings = roomsData.rooms.map((room: any) => {
-          const roomBookings = bks.filter((b: any) => 
+      const res = await fetch(`${API_BASE_URL}/api/rooms`);
+      if (res.ok) {
+        const data = await res.json();
+        const roomsWithBookings = data.rooms.map((room: any) => {
+          // Only block slots for PENDING or APPROVED bookings
+          const roomBookings = data.bookings.filter((b: any) => 
             b.room_id === room.id && ['PENDING', 'APPROVED'].includes(b.status)
           );
           const bookedSlots: number[] = [];
@@ -67,8 +69,7 @@ export default function Rooms() {
           return {
             ...room,
             features: defaultFeatures,
-            bookedSlots,
-            roomBookings
+            bookedSlots
           };
         });
         
@@ -79,30 +80,69 @@ export default function Rooms() {
       }
     } catch (err) {
       console.error(err);
-    } finally {
-      setLoading(false);
     }
   };
 
-  const updateBookingStatus = async (bookingId: number, status: string) => {
+  const fetchMyBookings = async () => {
+    if (!user?.student_id) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/rooms/bookings/${bookingId}/status`, {
+      const res = await fetch(`${API_BASE_URL}/api/rooms/my-bookings/${user.student_id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setMyBookings(data.bookings);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleCancelBooking = async (bookingId: number) => {
+    if (!confirm('Are you sure you want to cancel this booking?')) return;
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/rooms/cancel`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status })
+        body: JSON.stringify({ bookingId, studentId: user?.student_id })
       });
       if (res.ok) {
         fetchData();
       } else {
         const data = await res.json();
-        alert(data.error || 'Failed to update status');
+        alert(data.error || 'Failed to cancel booking');
       }
     } catch (err) {
-      alert('Error updating booking status');
+      alert('Error cancelling booking');
     }
   };
 
-  const handleOverrideBooking = async () => {
+  const currentRoomData = rooms.find(r => r.id === selectedRoom) || rooms[0];
+
+  const getSlotStatus = (roomId: number, slotIndex: number) => {
+    const room = rooms.find(r => r.id === roomId);
+    if (room?.bookedSlots.includes(slotIndex)) return 'booked';
+    if (selectedSlots[roomId]?.includes(slotIndex)) return 'selected';
+    return false;
+  };
+
+  const toggleSlot = (roomId: number, slotIndex: number) => {
+    const room = rooms.find(r => r.id === roomId);
+    if (room?.bookedSlots.includes(slotIndex)) return; // can't toggle booked
+    setSelectedRoom(roomId);
+    setSelectedSlots(prev => {
+      const current = prev[roomId] || [];
+      if (current.includes(slotIndex)) {
+        return { ...prev, [roomId]: current.filter((i: number) => i !== slotIndex) };
+      } else {
+        return { ...prev, [roomId]: [...current, slotIndex].sort((a,b) => a-b) };
+      }
+    });
+  };
+
+  const handleBooking = async () => {
+    if (!agreed) {
+      alert('Please agree to the attendance requirement before booking.');
+      return;
+    }
     if (!selectedRoom) return;
     
     const mySlots = selectedSlots[selectedRoom] || [];
@@ -111,6 +151,7 @@ export default function Rooms() {
       return;
     }
     
+    // Check if slots are contiguous
     const sorted = [...mySlots].sort((a,b) => a-b);
     for (let i = 0; i < sorted.length - 1; i++) {
       if (sorted[i + 1] !== sorted[i] + 1) {
@@ -128,69 +169,27 @@ export default function Rooms() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           roomId: selectedRoom,
-          studentId: user?.student_id || 'STAFF-OVERRIDE',
+          studentId: user?.student_id,
           startTime: startStr,
-          endTime: endStr,
-          role: 'STAFF'
+          endTime: endStr
         })
       });
       if (res.ok) {
+        const roomName = rooms.find(r => r.id === selectedRoom)?.name;
+        setBookingSuccess(`Room ${roomName} booking requested for ${todayDisplay} from ${startStr} to ${endStr}`);
         setSelectedSlots(prev => ({ ...prev, [selectedRoom]: [] }));
         fetchData();
+        setTimeout(() => setBookingSuccess(null), 5000);
       } else {
         const data = await res.json();
-        alert(data.error || 'Failed to override book room');
+        alert(data.error || 'Failed to book room');
       }
     } catch (err) {
-      alert('Error overriding booking');
+      alert('Error booking room');
     }
   };
 
-  const getSlotStatus = (roomId: number, slotIndex: number) => {
-    const room = rooms.find(r => r.id === roomId);
-    if (room?.bookedSlots.includes(slotIndex)) {
-      // Find which booking it is
-      const booking = room.roomBookings.find((b: any) => {
-        const startIdx = timeSlots.indexOf(b.start_time);
-        const endIdx = timeSlots.indexOf(b.end_time);
-        return slotIndex >= startIdx && slotIndex < endIdx;
-      });
-      if (booking?.status === 'PENDING') return 'pending';
-      return 'booked';
-    }
-    if (selectedSlots[roomId]?.includes(slotIndex)) return 'selected';
-    return false;
-  };
-
-  const toggleSlot = (roomId: number, slotIndex: number) => {
-    const room = rooms.find(r => r.id === roomId);
-    if (room?.bookedSlots.includes(slotIndex)) {
-      // Allow clicking on booked slot to view details or cancel?
-      const booking = room.roomBookings.find((b: any) => {
-        const startIdx = timeSlots.indexOf(b.start_time);
-        const endIdx = timeSlots.indexOf(b.end_time);
-        return slotIndex >= startIdx && slotIndex < endIdx;
-      });
-      if (booking) {
-        if (confirm(`Booking by ${booking.student_name} (${booking.student_id}). Cancel it?`)) {
-          updateBookingStatus(booking.id, 'CANCELLED');
-        }
-      }
-      return;
-    }
-    setSelectedRoom(roomId);
-    setSelectedSlots(prev => {
-      const current = prev[roomId] || [];
-      if (current.includes(slotIndex)) {
-        return { ...prev, [roomId]: current.filter((i: number) => i !== slotIndex) };
-      } else {
-        return { ...prev, [roomId]: [...current, slotIndex].sort((a,b) => a-b) };
-      }
-    });
-  };
-
-  const currentRoomData = rooms.find(r => r.id === selectedRoom) || rooms[0];
-  const pendingBookings = bookings.filter(b => b.status === 'PENDING');
+  const selectedSlotsForRoom = selectedRoom ? (selectedSlots[selectedRoom] || []) : [];
 
   if (loading && rooms.length === 0) {
     return <div className="flex items-center justify-center h-full"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-slate-900"></div></div>;
@@ -202,8 +201,8 @@ export default function Rooms() {
         <div className="mb-8">
           <div className="flex items-start justify-between">
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">Room Management</h1>
-              <p className="text-gray-600 text-lg">Approve student requests and manage room availability.</p>
+              <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">Study Rooms</h1>
+              <p className="text-gray-600 text-lg">Book a space for your group. Subject to staff approval.</p>
             </div>
             <div className="hidden md:flex items-center gap-3 bg-white border border-gray-200 rounded-xl px-4 py-3 shadow-sm">
               <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center">
@@ -217,39 +216,34 @@ export default function Rooms() {
           </div>
         </div>
 
-        {pendingBookings.length > 0 && (
+        {myBookings.length > 0 && (
           <div className="mb-8 bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
-            <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <span className="material-symbols-outlined text-amber-500">pending_actions</span>
-              Pending Approvals ({pendingBookings.length})
-            </h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-4">My Bookings</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {pendingBookings.map(b => (
-                <div key={b.id} className="border border-gray-200 rounded-xl p-4 bg-amber-50/30 flex flex-col justify-between">
+              {myBookings.map(b => (
+                <div key={b.id} className="border border-gray-200 rounded-xl p-4 bg-gray-50 flex flex-col justify-between">
                   <div>
                     <div className="flex justify-between items-start mb-2">
                       <h3 className="font-bold text-gray-900">{b.room_name}</h3>
-                      <span className="text-xs font-bold px-2 py-1 rounded-md bg-amber-100 text-amber-800">
-                        {b.start_time} - {b.end_time}
+                      <span className={`text-xs font-bold px-2 py-1 rounded-md ${
+                        b.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-800' :
+                        b.status === 'PENDING' ? 'bg-amber-100 text-amber-800' :
+                        b.status === 'REJECTED' ? 'bg-rose-100 text-rose-800' :
+                        'bg-gray-200 text-gray-800'
+                      }`}>
+                        {b.status}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-600 font-medium">{b.student_name}</p>
-                    <p className="text-xs text-gray-500 mb-4">{b.student_id}</p>
+                    <p className="text-sm text-gray-600 mb-4">{b.start_time} - {b.end_time}</p>
                   </div>
-                  <div className="flex gap-2">
+                  {['PENDING', 'APPROVED'].includes(b.status) && (
                     <button 
-                      onClick={() => updateBookingStatus(b.id, 'APPROVED')}
-                      className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg text-sm font-bold transition-colors"
+                      onClick={() => handleCancelBooking(b.id)}
+                      className="text-sm font-medium text-rose-600 hover:text-rose-800 text-left"
                     >
-                      Approve
+                      Cancel Booking
                     </button>
-                    <button 
-                      onClick={() => updateBookingStatus(b.id, 'REJECTED')}
-                      className="flex-1 bg-rose-100 hover:bg-rose-200 text-rose-700 py-2 rounded-lg text-sm font-bold transition-colors"
-                    >
-                      Reject
-                    </button>
-                  </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -260,8 +254,8 @@ export default function Rooms() {
           <div className="lg:col-span-2 bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
             <div className="p-6 border-b border-gray-200 flex items-center justify-between bg-gray-50">
               <div>
-                <h2 className="text-xl font-bold text-gray-900">Timeline</h2>
-                <p className="text-sm text-gray-500 mt-1">Click empty slots to override · Click booked slots to cancel</p>
+                <h2 className="text-xl font-bold text-gray-900">Availability</h2>
+                <p className="text-sm text-gray-500 mt-1">Click empty slots to book · Hover for times</p>
               </div>
               <div className="flex gap-4 text-xs font-medium">
                 <div className="flex items-center gap-2">
@@ -270,11 +264,7 @@ export default function Rooms() {
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 rounded bg-gray-200"></div>
-                  <span className="text-gray-600">Approved</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded bg-amber-200"></div>
-                  <span className="text-gray-600">Pending</span>
+                  <span className="text-gray-600">Booked/Pending</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 rounded bg-gradient-to-br from-slate-700 to-slate-800"></div>
@@ -290,7 +280,7 @@ export default function Rooms() {
                       <div className="flex items-center gap-4">
                         <div className="w-40 flex-shrink-0">
                           <div className="flex items-center gap-3">
-                            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center text-white font-bold shadow-md">
+                            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center text-white font-bold shadow-md hover:shadow-lg hover:scale-105 transition-all cursor-pointer text-sm">
                               {room.zone}
                             </div>
                             <div>
@@ -312,13 +302,11 @@ export default function Rooms() {
                               onMouseEnter={() => setHoveredSlot({ roomId: room.id, slotIndex: i })}
                               onMouseLeave={() => setHoveredSlot(null)}
                               onClick={() => toggleSlot(room.id, i)}
-                              className={`h-16 rounded-xl cursor-pointer transition-all relative group/slot flex items-center justify-center ${
+                              className={`h-16 rounded-xl cursor-pointer transition-all relative group/slot ${
                                 slotStatus === 'selected' 
                                   ? 'bg-gradient-to-br from-slate-700 to-slate-800 shadow-lg scale-110 ring-2 ring-slate-400' 
-                                  : slotStatus === 'pending'
-                                  ? 'bg-amber-200 border-2 border-amber-300 shadow-sm'
                                   : slotStatus === 'booked' 
-                                  ? 'bg-gray-200 border-2 border-gray-300' 
+                                  ? 'bg-gray-200 cursor-not-allowed opacity-75' 
                                   : 'bg-gray-50 border-2 border-gray-200 hover:border-slate-400 hover:bg-slate-50 hover:scale-110 hover:shadow-md'
                               }`}
                             >
@@ -331,13 +319,16 @@ export default function Rooms() {
                                 </div>
                               )}
                               {slotStatus === 'selected' && (
-                                <span className="material-symbols-outlined text-white text-lg">check</span>
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                  <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center backdrop-blur-sm">
+                                    <span className="material-symbols-outlined text-white text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>check</span>
+                                  </div>
+                                </div>
                               )}
                               {slotStatus === 'booked' && (
-                                <span className="material-symbols-outlined text-gray-500 text-sm">event_busy</span>
-                              )}
-                              {slotStatus === 'pending' && (
-                                <span className="material-symbols-outlined text-amber-700 text-sm">schedule</span>
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                  <span className="material-symbols-outlined text-gray-400 text-sm">block</span>
+                                </div>
                               )}
                             </div>
                             );
@@ -366,11 +357,11 @@ export default function Rooms() {
           <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm h-fit sticky top-6">
             <div className="flex items-center justify-between mb-6 pb-6 border-b border-gray-200">
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-1">Staff Override</h2>
-                <p className="text-sm text-gray-500">Block rooms immediately</p>
+                <h2 className="text-2xl font-bold text-gray-900 mb-1">{currentRoomData.name}</h2>
+                <p className="text-sm text-gray-500">Complete booking details</p>
               </div>
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center shadow-md">
-                <span className="material-symbols-outlined text-white text-xl">admin_panel_settings</span>
+                <span className="material-symbols-outlined text-white text-xl">meeting_room</span>
               </div>
             </div>
             
@@ -380,21 +371,40 @@ export default function Rooms() {
                   <span className="material-symbols-outlined text-slate-700 text-sm">info</span>
                 </div>
                 <div className="flex-1">
-                  <p className="text-xs font-bold text-slate-900 mb-1">Selection</p>
+                  <p className="text-xs font-bold text-slate-900 mb-1">Your Booking</p>
                   <p className="text-sm text-slate-700 leading-relaxed">
-                    {currentRoomData.name} · {selectedSlots[currentRoomData.id]?.length > 0 ? selectedSlots[currentRoomData.id].map(i => timeSlots[i]).join(', ') : 'No slots selected'}
+                    {currentRoomData.name} · {todayDisplay} · {selectedSlotsForRoom.length > 0 ? selectedSlotsForRoom.map(i => timeSlots[i]).join(', ') : 'No slots selected'}
                   </p>
                 </div>
               </div>
             </div>
 
+            <label className="flex items-start gap-3 mb-6 cursor-pointer group p-3 rounded-xl hover:bg-gray-50 transition-all">
+              <input 
+                type="checkbox" 
+                checked={agreed}
+                onChange={(e) => setAgreed(e.target.checked)}
+                className="mt-0.5 w-5 h-5 rounded-md border-2 border-gray-300 text-slate-700 focus:ring-slate-500 focus:ring-2 transition-all cursor-pointer"
+              />
+              <span className="text-sm text-gray-600 leading-relaxed group-hover:text-gray-800 transition-colors">
+                I'll make sure at least <span className="font-bold text-gray-900">2 people</span> show up within <span className="font-bold text-gray-900">15 minutes</span>
+              </span>
+            </label>
+
+            {bookingSuccess && (
+              <div className="mb-4 bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex items-start gap-3">
+                <span className="material-symbols-outlined text-emerald-600">check_circle</span>
+                <p className="text-sm text-emerald-800 font-medium">{bookingSuccess}</p>
+              </div>
+            )}
+
             <button 
-              onClick={handleOverrideBooking}
-              disabled={!(selectedSlots[currentRoomData.id]?.length > 0)}
+              onClick={handleBooking}
+              disabled={!agreed || selectedSlotsForRoom.length === 0}
               className="w-full bg-gradient-to-r from-slate-700 to-slate-800 hover:from-slate-800 hover:to-slate-900 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
-              <span className="material-symbols-outlined">gavel</span>
-              <span>Create Override</span>
+              <span>Submit Request</span>
+              <span className="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
             </button>
           </div>
           )}

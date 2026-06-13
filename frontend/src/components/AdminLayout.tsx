@@ -4,10 +4,11 @@ import { useAuth } from '../context/AuthContext';
 import Logo from './Logo';
 import NotificationCenter from './NotificationCenter';
 
-export default function Layout() {
+export default function AdminLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const handleLogout = () => {
@@ -15,13 +16,17 @@ export default function Layout() {
     navigate('/login');
   };
 
-  // Staff-specific navigation items
   const navItems = [
-    { to: '/map', icon: 'map', label: 'Map View' },
-    { to: '/list', icon: 'list_alt', label: 'Desk List' },
-    { to: '/rooms', icon: 'meeting_room', label: 'Rooms' },
-    { to: '/analytics', icon: 'analytics', label: 'Analytics' },
-    { to: '/settings', icon: 'settings', label: 'Settings' },
+    { to: '/admin', icon: 'dashboard', label: 'Dashboard' },
+    { to: '/admin/users', icon: 'group', label: 'Users' },
+    { to: '/admin/students', icon: 'school', label: 'Students' },
+    { to: '/admin/staff', icon: 'badge', label: 'Staff' },
+    { to: '/admin/desks', icon: 'desk', label: 'Desks' },
+    { to: '/admin/rooms', icon: 'meeting_room', label: 'Rooms' },
+    { to: '/admin/analytics', icon: 'analytics', label: 'Analytics' },
+    { to: '/admin/activity', icon: 'history', label: 'Activity' },
+    { to: '/admin/notifications', icon: 'campaign', label: 'Notifications' },
+    { to: '/admin/settings', icon: 'settings', label: 'Settings' },
   ];
 
   const bottomItems = [
@@ -30,18 +35,42 @@ export default function Layout() {
   ];
 
   const mobileNavItems = [
-    { to: '/map', icon: 'explore', label: 'Map' },
-    { to: '/rooms', icon: 'meeting_room', label: 'Rooms' },
-    { to: '/list', icon: 'list_alt', label: 'Desks' },
+    { to: '/admin', icon: 'dashboard', label: 'Home' },
+    { to: '/admin/users', icon: 'group', label: 'Users' },
+    { to: '/admin/desks', icon: 'desk', label: 'Desks' },
+    { to: '/admin/rooms', icon: 'meeting_room', label: 'Rooms' },
+    { to: '/admin/analytics', icon: 'analytics', label: 'Stats' },
   ];
 
   return (
     <div className="mesh-bg text-on-surface font-body-base h-screen overflow-hidden flex flex-col">
       {/* Premium TopAppBar */}
-      <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-8 h-20 bg-white/98 backdrop-blur-xl border-b border-gray-200/80 shadow-sm">
-        <Link to="/" className="hover:opacity-80 transition-opacity">
-          <Logo variant="default" className="scale-[0.35] origin-left -ml-4" />
-        </Link>
+      <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-4 md:px-8 h-20 bg-white/98 backdrop-blur-xl border-b border-gray-200/80 shadow-sm">
+        <div className="flex items-center gap-2">
+          {/* Mobile menu toggle */}
+          <button
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="md:hidden p-2 text-gray-600 hover:text-primary hover:bg-primary/5 rounded-xl transition-all"
+          >
+            <span className="material-symbols-outlined text-2xl">menu</span>
+          </button>
+          
+          {/* Back Button */}
+          <button
+            onClick={() => navigate(-1)}
+            className="p-2 text-gray-600 hover:text-primary hover:bg-primary/5 rounded-xl transition-all"
+            title="Go Back"
+          >
+            <span className="material-symbols-outlined text-2xl">arrow_back</span>
+          </button>
+
+          <Link to="/" className="hidden sm:block hover:opacity-80 transition-opacity">
+            <Logo variant="default" className="scale-[0.35] origin-left ml-2" />
+          </Link>
+          <Link to="/" className="sm:hidden ml-2 hover:opacity-80 transition-opacity">
+            <span className="font-display-lg text-lg font-bold text-slate-800 tracking-tight">LOCUS</span>
+          </Link>
+        </div>
         
         {/* Right side controls with premium styling */}
         <div className="flex items-center gap-3 relative">
@@ -62,18 +91,18 @@ export default function Layout() {
               <span className="material-symbols-outlined text-white text-lg">person</span>
             </div>
             <div className="hidden md:block">
-              <p className="text-xs font-semibold text-gray-800 leading-tight">{user?.name || 'Staff User'}</p>
-              <p className="text-[10px] text-gray-500">{user?.role === 'ADMIN' ? 'Admin Portal' : 'Staff Portal'}</p>
+              <p className="text-xs font-semibold text-gray-800 leading-tight">{user?.name || 'Admin User'}</p>
+              <p className="text-[10px] text-gray-500">Admin Portal</p>
             </div>
           </button>
 
           {isProfileOpen && (
             <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50 animate-in fade-in slide-in-from-top-2">
               <div className="px-4 py-2 border-b border-gray-100 mb-1">
-                <p className="text-sm font-semibold text-gray-900">{user?.name || 'Staff User'}</p>
-                <p className="text-xs text-gray-500">{user?.email || 'staff@locus.edu'}</p>
+                <p className="text-sm font-semibold text-gray-900">{user?.name || 'Admin User'}</p>
+                <p className="text-xs text-gray-500">{user?.email || 'admin@locus.edu'}</p>
               </div>
-              <Link to="/settings" onClick={() => setIsProfileOpen(false)} className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+              <Link to="/admin/settings" onClick={() => setIsProfileOpen(false)} className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
                 <span className="material-symbols-outlined text-lg">settings</span>
                 Settings
               </Link>
@@ -101,8 +130,8 @@ export default function Layout() {
                 <span>S</span>
               </div>
               <div className="flex-1">
-                <h2 className="font-headline-md text-base text-on-surface font-bold leading-tight">Main<br/>Library</h2>
-                <p className="font-body-sm text-xs text-on-surface-variant">Staff Portal</p>
+                <h2 className="font-headline-md text-base text-on-surface font-bold leading-tight">Admin<br/>Portal</h2>
+                <p className="font-body-sm text-xs text-on-surface-variant">Management</p>
               </div>
             </div>
           </div>
@@ -110,8 +139,13 @@ export default function Layout() {
           {/* Navigation Items - matching the image style */}
           <ul className="flex-1 flex flex-col gap-2 overflow-y-auto">
             {navItems.map(item => {
-              const isActive = location.pathname === item.to;
+              // Exact match for dashboard, startswith for subroutes
+              const isActive = item.to === '/admin' 
+                ? location.pathname === '/admin' 
+                : location.pathname.startsWith(item.to);
+                
               const isDisabled = item.to === '#';
+              
               return (
                 <li key={item.label}>
                   {isDisabled ? (
@@ -171,15 +205,17 @@ export default function Layout() {
               <span className="material-symbols-outlined text-white text-lg">person</span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-xs text-on-surface truncate">{user?.name || 'Staff User'}</p>
-              <p className="text-[10px] text-on-surface-variant truncate">{user?.email || 'staff@locus.edu'}</p>
+              <p className="font-semibold text-xs text-on-surface truncate">{user?.name || 'Admin User'}</p>
+              <p className="text-[10px] text-on-surface-variant truncate">{user?.email || 'admin@locus.edu'}</p>
             </div>
             <span className="material-symbols-outlined text-on-surface-variant text-base">more_vert</span>
           </div>
         </nav>
 
         {/* Page Content (injected via Outlet) */}
-        <Outlet />
+        <div className="flex-1 md:ml-64 overflow-y-auto">
+          <Outlet />
+        </div>
       </div>
 
       {/* Enhanced BottomNavBar (Mobile) */}
@@ -207,6 +243,70 @@ export default function Layout() {
           );
         })}
       </nav>
+
+      {/* Mobile Sidebar Overlay */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden fixed inset-0 z-[100] flex">
+          <div 
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm" 
+            onClick={() => setIsMobileMenuOpen(false)}
+          ></div>
+          <div className="relative w-72 bg-white h-full shadow-2xl flex flex-col animate-in slide-in-from-left duration-300">
+            <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50/50">
+              <Logo variant="compact" showTagline={false} />
+              <button 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4">
+              <div className="mb-4">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 px-2">Navigation</p>
+                <ul className="flex flex-col gap-1">
+                  {navItems.map(item => {
+                    const isActive = item.to === '/admin' 
+                      ? location.pathname === '/admin' 
+                      : location.pathname.startsWith(item.to);
+                    
+                    if (item.to === '#') return null;
+
+                    return (
+                      <li key={item.label}>
+                        <NavLink
+                          to={item.to}
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className={`flex items-center gap-3 px-4 py-3 rounded-xl font-semibold transition-all text-sm ${
+                            isActive 
+                              ? 'bg-primary text-white shadow-md' 
+                              : 'text-gray-600 hover:bg-gray-100'
+                          }`}
+                        >
+                          <span className="material-symbols-outlined">{item.icon}</span>
+                          <span>{item.label}</span>
+                        </NavLink>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            </div>
+            <div className="p-4 border-t border-gray-200 bg-gray-50/50">
+              <button 
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  handleLogout();
+                }}
+                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-50 text-red-600 font-semibold rounded-xl hover:bg-red-100 transition-colors"
+              >
+                <span className="material-symbols-outlined">logout</span>
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
