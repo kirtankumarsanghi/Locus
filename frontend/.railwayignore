@@ -1,0 +1,24 @@
+# Railway Build Ignore
+# Exclude local development artifacts from Railway builds
+
+node_modules/
+dist/
+.env
+.env.local
+.env.development
+.vscode/
+.idea/
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Keep these files for Railway
+!package.json
+!package-lock.json
+!tsconfig.json
+!vite.config.ts
+!tailwind.config.js
+!postcss.config.js
+!nixpacks.toml
+!Procfile

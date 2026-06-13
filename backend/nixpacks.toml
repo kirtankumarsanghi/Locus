@@ -1,5 +1,5 @@
 [phases.setup]
-nixPkgs = ["nodejs_20"]
+nixPkgs = ["nodejs_20", "python3"]
 
 [phases.install]
 cmds = [
@@ -11,7 +11,7 @@ cmds = [
 cmds = ["npm run build"]
 
 [start]
-cmd = "npx serve -s dist -l $PORT"
+cmd = "npm start"
 
 [variables]
 NODE_ENV = "production"

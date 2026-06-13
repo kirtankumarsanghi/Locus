@@ -1,11 +1,9 @@
-node_modules
-.git
-backend
+# Vercel Ignore (also helps Railway)
+node_modules/
 *.db
 *.db-shm
 *.db-wal
+.env
 .env.local
-.vscode
-README.md
-design.md
-*.backup
+.vscode/
+.idea/
