@@ -159,9 +159,9 @@ export default function MapView() {
       <div className={`fixed ${(abandonedCount > 0 || awayCount > 0) ? 'top-[136px]' : 'top-24'} left-6 md:left-[17rem] z-30 transition-all duration-300`}>
         <button 
           onClick={() => navigate('/')}
-          className="flex items-center gap-2 bg-white text-primary hover:text-indigo-700 transition-all px-3 py-2 rounded-xl shadow-sm border border-gray-200 hover:border-primary/40 hover:shadow-md group"
+          className="flex items-center gap-2 bg-white text-slate-700 hover:text-slate-900 transition-all px-3 py-2 rounded-xl shadow-sm border border-gray-200 hover:border-slate-400 hover:shadow-md group"
         >
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-indigo-600 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
             <span className="material-symbols-outlined text-white text-base">home</span>
           </div>
           <span className="font-semibold text-sm hidden md:inline text-gray-800">Home</span>
@@ -184,7 +184,7 @@ export default function MapView() {
           {/* Main Hall Header with Stats */}
           <div className="absolute top-6 left-6 right-6 flex justify-between items-start">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-indigo-600 flex items-center justify-center shadow-sm">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-700 to-slate-800 flex items-center justify-center shadow-sm">
                 <span className="material-symbols-outlined text-white text-xl">home</span>
               </div>
               <div>
@@ -294,12 +294,12 @@ export default function MapView() {
       <aside className="w-full md:w-96 bg-white border-l border-gray-200 flex flex-col z-20 shadow-sm">
         {/* Floor Stats - Enhanced */}
         <div className="p-6 border-b border-gray-200">
-          <div className="bg-gradient-to-br from-indigo-50/80 to-purple-50/60 rounded-2xl p-5 border border-primary/10">
+          <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl p-5 border border-slate-200">
             <div className="flex justify-between items-center">
               <div>
                 <p className="font-label-bold text-xs text-gray-500 uppercase tracking-wider mb-2">Available Now</p>
                 <div className="flex items-baseline gap-2">
-                  <span className="font-display-lg text-5xl font-black text-primary">{freeCount}</span>
+                  <span className="font-display-lg text-5xl font-black text-slate-700">{freeCount}</span>
                   <span className="text-2xl text-gray-400 font-medium">/ {totalDesks}</span>
                 </div>
               </div>
@@ -310,7 +310,7 @@ export default function MapView() {
                     cx="48" 
                     cy="48" 
                     r="40" 
-                    stroke="#6366f1" 
+                    stroke="#334155" 
                     strokeWidth="8" 
                     fill="none"
                     strokeDasharray={`${2 * Math.PI * 40}`}
@@ -320,7 +320,7 @@ export default function MapView() {
                   />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-xl font-bold text-primary">{Math.round((freeCount / totalDesks) * 100)}%</span>
+                  <span className="text-xl font-bold text-slate-700">{Math.round((freeCount / totalDesks) * 100)}%</span>
                 </div>
               </div>
             </div>
@@ -395,10 +395,10 @@ export default function MapView() {
                   </>
                 ) : selectedDesk.status !== 'FREE' ? (
                   <>
-                    <button className="flex-1 bg-white border-2 border-gray-200 text-primary py-2.5 rounded-xl font-label-bold text-label-bold hover:bg-gray-50 transition-all">
+                    <button className="flex-1 bg-white border-2 border-gray-200 text-slate-700 py-2.5 rounded-xl font-label-bold text-label-bold hover:bg-gray-50 transition-all">
                       Flag Issue
                     </button>
-                    <button className="flex-1 bg-gradient-to-r from-primary to-indigo-600 text-white py-2.5 rounded-xl font-label-bold text-label-bold hover:opacity-90 transition-all shadow-lg">
+                    <button className="flex-1 bg-gradient-to-r from-slate-700 to-slate-800 text-white py-2.5 rounded-xl font-label-bold text-label-bold hover:opacity-90 transition-all shadow-lg">
                       End Session
                     </button>
                   </>
@@ -422,7 +422,7 @@ export default function MapView() {
 
         {/* Primary Action - Enhanced */}
         <div className="p-6 border-t border-gray-200 mt-auto">
-          <Link to="/session" className="w-full bg-gradient-to-r from-primary to-indigo-600 text-white py-4 rounded-2xl font-label-bold text-base flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-lg hover:shadow-xl">
+          <Link to="/session" className="w-full bg-gradient-to-r from-slate-700 to-slate-800 text-white py-4 rounded-2xl font-label-bold text-base flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-lg hover:shadow-xl">
             <span className="material-symbols-outlined text-xl">qr_code_scanner</span>
             Scan to Check-in
           </Link>
