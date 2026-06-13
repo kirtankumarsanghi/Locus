@@ -11,7 +11,7 @@ cmds = [
 cmds = ["npm run build"]
 
 [start]
-cmd = "npx serve dist -l $PORT -c ./serve.json"
+cmd = "npx serve dist -l $PORT -s"
 
 [variables]
 NODE_ENV = "production"
