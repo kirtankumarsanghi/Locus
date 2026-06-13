@@ -237,4 +237,13 @@ export default function ActiveSession() {
         </Link>
         <span className="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1 scale-90 shadow-sm">
           <span className="material-symbols-outlined fill">person</span>
-          <span className="font-label-bold text-[10px] mt-1">Se
+          <span className="font-label-bold text-[10px] mt-1">Session</span>
+        </span>
+        <Link to="/" className="flex flex-col items-center justify-center text-on-surface-variant rounded-lg px-4 py-1">
+          <span className="material-symbols-outlined">notifications</span>
+          <span className="font-label-bold text-[10px] mt-1">Alerts</span>
+        </Link>
+      </nav>
+    </div>
+  );
+}
