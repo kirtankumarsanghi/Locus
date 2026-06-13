@@ -22,3 +22,4 @@ pnpm-debug.log*
 !postcss.config.js
 !nixpacks.toml
 !Procfile
+!server.js
