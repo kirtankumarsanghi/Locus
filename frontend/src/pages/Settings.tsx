@@ -1,166 +1,294 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export default function Settings() {
   const navigate = useNavigate();
+  const [hasChanges, setHasChanges] = useState(false);
 
   return (
-    <main className="flex-1 md:ml-64 relative overflow-auto">
-      <div className="p-lg space-y-lg max-w-4xl">
-        <div className="flex items-center gap-md mb-md">
+    <main className="flex-1 md:ml-72 p-6 md:p-8 mx-auto mb-20 md:mb-0 overflow-y-auto bg-gradient-to-br from-indigo-50/30 via-white to-purple-50/30">
+      {/* Back Button */}
+      <button 
+        onClick={() => navigate(-1)}
+        className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 transition-all mb-6 group"
+      >
+        <span className="material-symbols-outlined group-hover:-translate-x-1 transition-transform">arrow_back</span>
+        <span className="font-semibold">Back</span>
+      </button>
+
+      {/* Header */}
+      <div className="mb-8">
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Settings</h1>
+            <p className="text-gray-600 text-lg">Configure how things work ⚙️</p>
+          </div>
+          {hasChanges && (
+            <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-200 rounded-xl text-amber-700 text-sm font-semibold">
+              <span className="material-symbols-outlined text-sm">info</span>
+              <span>You have unsaved changes</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* General Settings */}
+      <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow mb-8">
+        <div className="flex items-center gap-3 mb-6 pb-6 border-b-2 border-gray-100">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
+            <span className="material-symbols-outlined text-white text-xl">settings</span>
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">General Settings</h2>
+            <p className="text-sm text-gray-500">Basic info about your library</p>
+          </div>
+        </div>
+        <div className="space-y-5">
+          <div>
+            <label className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-2">
+              <span className="material-symbols-outlined text-indigo-600 text-sm">domain</span>
+              Library Name
+            </label>
+            <input 
+              type="text" 
+              defaultValue="Main Library" 
+              onChange={() => setHasChanges(true)}
+              className="w-full px-4 py-3.5 bg-white border-2 border-gray-200 hover:border-indigo-200 rounded-xl text-gray-900 font-medium focus:outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 transition-all shadow-sm"
+            />
+          </div>
+
+          <div>
+            <label className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-2">
+              <span className="material-symbols-outlined text-indigo-600 text-sm">location_on</span>
+              Location
+            </label>
+            <input 
+              type="text" 
+              defaultValue="Main Campus" 
+              onChange={() => setHasChanges(true)}
+              className="w-full px-4 py-3.5 bg-white border-2 border-gray-200 hover:border-indigo-200 rounded-xl text-gray-900 font-medium focus:outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 transition-all shadow-sm"
+            />
+          </div>
+
+          <div>
+            <label className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-2">
+              <span className="material-symbols-outlined text-indigo-600 text-sm">counter_1</span>
+              Total Desks
+            </label>
+            <input 
+              type="number" 
+              defaultValue="120" 
+              onChange={() => setHasChanges(true)}
+              className="w-full px-4 py-3.5 bg-white border-2 border-gray-200 hover:border-indigo-200 rounded-xl text-gray-900 font-medium focus:outline-none focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 transition-all shadow-sm"
+            />
+            <p className="text-xs text-gray-500 mt-2 flex items-center gap-1">
+              <span className="material-symbols-outlined text-xs">info</span>
+              This should match physical desks in your space
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Enforcement Rules */}
+      <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow mb-8">
+        <div className="flex items-center gap-3 mb-6 pb-6 border-b-2 border-gray-100">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg">
+            <span className="material-symbols-outlined text-white text-xl">gavel</span>
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">Enforcement Rules</h2>
+            <p className="text-sm text-gray-500">How strict should we be?</p>
+          </div>
+        </div>
+        <div className="space-y-6">
+          <div>
+            <label className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-2">
+              <span className="material-symbols-outlined text-amber-600 text-sm">timer</span>
+              Away Timeout (minutes)
+            </label>
+            <input 
+              type="number" 
+              defaultValue="30" 
+              onChange={() => setHasChanges(true)}
+              className="w-full px-4 py-3.5 bg-white border-2 border-gray-200 hover:border-amber-200 rounded-xl text-gray-900 font-medium focus:outline-none focus:border-amber-400 focus:ring-4 focus:ring-amber-100 transition-all shadow-sm"
+            />
+            <p className="text-xs text-gray-600 mt-2 bg-amber-50 px-3 py-2 rounded-lg border border-amber-200">
+              Desks get flagged as "abandoned" after this time
+            </p>
+          </div>
+
+          <div>
+            <label className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-2">
+              <span className="material-symbols-outlined text-amber-600 text-sm">lock_clock</span>
+              Auto-Release Timeout (minutes)
+            </label>
+            <input 
+              type="number" 
+              defaultValue="60" 
+              onChange={() => setHasChanges(true)}
+              className="w-full px-4 py-3.5 bg-white border-2 border-gray-200 hover:border-amber-200 rounded-xl text-gray-900 font-medium focus:outline-none focus:border-amber-400 focus:ring-4 focus:ring-amber-100 transition-all shadow-sm"
+            />
+            <p className="text-xs text-gray-600 mt-2 bg-amber-50 px-3 py-2 rounded-lg border border-amber-200">
+              System automatically frees up the desk after this
+            </p>
+          </div>
+
+          <div className="pt-4 border-t-2 border-gray-100">
+            <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-4">Notifications & Actions</p>
+            <div className="space-y-4">
+              <label className="flex items-start gap-3 cursor-pointer group p-3 rounded-xl hover:bg-gray-50 transition-all">
+                <input 
+                  type="checkbox" 
+                  id="notifications" 
+                  defaultChecked 
+                  onChange={() => setHasChanges(true)}
+                  className="mt-0.5 w-5 h-5 text-indigo-600 bg-white border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 transition-all cursor-pointer"
+                />
+                <div className="flex-1">
+                  <span className="text-sm font-semibold text-gray-900 group-hover:text-gray-800">Send notifications to staff</span>
+                  <p className="text-xs text-gray-500 mt-1">Get alerts when desks are flagged</p>
+                </div>
+              </label>
+
+              <label className="flex items-start gap-3 cursor-pointer group p-3 rounded-xl hover:bg-gray-50 transition-all">
+                <input 
+                  type="checkbox" 
+                  id="autorelease" 
+                  defaultChecked 
+                  onChange={() => setHasChanges(true)}
+                  className="mt-0.5 w-5 h-5 text-indigo-600 bg-white border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 transition-all cursor-pointer"
+                />
+                <div className="flex-1">
+                  <span className="text-sm font-semibold text-gray-900 group-hover:text-gray-800">Enable automatic desk release</span>
+                  <p className="text-xs text-gray-500 mt-1">Let the system handle timeouts</p>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Operating Hours */}
+      <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow mb-8">
+        <div className="flex items-center gap-3 mb-6 pb-6 border-b-2 border-gray-100">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 flex items-center justify-center shadow-lg">
+            <span className="material-symbols-outlined text-white text-xl">schedule</span>
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">Operating Hours</h2>
+            <p className="text-sm text-gray-500">When are you open?</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div>
+            <label className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-2">
+              <span className="material-symbols-outlined text-emerald-600 text-sm">wb_sunny</span>
+              Opening Time
+            </label>
+            <input 
+              type="time" 
+              defaultValue="07:00" 
+              onChange={() => setHasChanges(true)}
+              className="w-full px-4 py-3.5 bg-white border-2 border-gray-200 hover:border-emerald-200 rounded-xl text-gray-900 font-medium focus:outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100 transition-all shadow-sm"
+            />
+          </div>
+          <div>
+            <label className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-2">
+              <span className="material-symbols-outlined text-emerald-600 text-sm">nights_stay</span>
+              Closing Time
+            </label>
+            <input 
+              type="time" 
+              defaultValue="23:00" 
+              onChange={() => setHasChanges(true)}
+              className="w-full px-4 py-3.5 bg-white border-2 border-gray-200 hover:border-emerald-200 rounded-xl text-gray-900 font-medium focus:outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100 transition-all shadow-sm"
+            />
+          </div>
+        </div>
+        <div className="mt-4 p-3 bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl border border-emerald-200">
+          <p className="text-sm text-gray-700 flex items-start gap-2">
+            <span className="material-symbols-outlined text-emerald-600 text-sm mt-0.5">info</span>
+            <span>Your library is open for <span className="font-bold text-emerald-700">16 hours</span> daily</span>
+          </p>
+        </div>
+      </div>
+
+      {/* QR Code Settings */}
+      <div className="bg-white border-2 border-gray-100 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow mb-8">
+        <div className="flex items-center gap-3 mb-6 pb-6 border-b-2 border-gray-100">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center shadow-lg">
+            <span className="material-symbols-outlined text-white text-xl">qr_code</span>
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">QR Code Settings</h2>
+            <p className="text-sm text-gray-500">Manage check-in/out codes</p>
+          </div>
+        </div>
+        <div className="space-y-4 mb-6">
+          <label className="flex items-start gap-3 cursor-pointer group p-3 rounded-xl hover:bg-gray-50 transition-all">
+            <input 
+              type="checkbox" 
+              id="qrRequired" 
+              defaultChecked 
+              onChange={() => setHasChanges(true)}
+              className="mt-0.5 w-5 h-5 text-purple-600 bg-white border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 transition-all cursor-pointer"
+            />
+            <div className="flex-1">
+              <span className="text-sm font-semibold text-gray-900 group-hover:text-gray-800">Require QR scan for check-in</span>
+              <p className="text-xs text-gray-500 mt-1">Students must scan desk QR to start session</p>
+            </div>
+          </label>
+
+          <label className="flex items-start gap-3 cursor-pointer group p-3 rounded-xl hover:bg-gray-50 transition-all">
+            <input 
+              type="checkbox" 
+              id="qrCheckout" 
+              onChange={() => setHasChanges(true)}
+              className="mt-0.5 w-5 h-5 text-purple-600 bg-white border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 transition-all cursor-pointer"
+            />
+            <div className="flex-1">
+              <span className="text-sm font-semibold text-gray-900 group-hover:text-gray-800">Require QR scan for check-out</span>
+              <p className="text-xs text-gray-500 mt-1">Optional: also require scan to end session</p>
+            </div>
+          </label>
+        </div>
+
+        <button className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-purple-500 to-pink-600 text-white font-bold rounded-xl hover:shadow-lg transition-all hover:scale-[1.02] group">
+          <span className="material-symbols-outlined">qr_code_scanner</span>
+          <span>Generate QR Codes</span>
+          <span className="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+        </button>
+        <p className="text-xs text-gray-500 mt-3 text-center md:text-left">Creates printable QR codes for all desks</p>
+      </div>
+
+      {/* Save Actions */}
+      <div className="sticky bottom-0 left-0 right-0 bg-white border-t-2 border-gray-200 p-6 rounded-t-2xl shadow-2xl flex flex-col md:flex-row justify-between items-center gap-4">
+        <p className="text-sm text-gray-600">
+          {hasChanges ? (
+            <span className="flex items-center gap-2">
+              <span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></span>
+              You have unsaved changes
+            </span>
+          ) : (
+            <span className="flex items-center gap-2 text-emerald-600">
+              <span className="material-symbols-outlined text-sm">check_circle</span>
+              All changes saved
+            </span>
+          )}
+        </p>
+        <div className="flex gap-3 w-full md:w-auto">
           <button 
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-xs text-primary hover:text-surface-tint transition-colors p-xs hover:bg-surface-container-high rounded-lg"
+            onClick={() => setHasChanges(false)}
+            className="flex-1 md:flex-none px-6 py-3.5 bg-white border-2 border-gray-200 text-gray-700 font-bold rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all"
           >
-            <span className="material-symbols-outlined">arrow_back</span>
-            <span className="font-label-bold text-label-bold">Back</span>
-          </button>
-        </div>
-        <div>
-          <h1 className="font-display-lg text-display-lg text-on-surface font-bold">Settings</h1>
-          <p className="font-body-base text-body-base text-on-surface-variant mt-sm">Configure your library's desk management system</p>
-        </div>
-
-        {/* General Settings */}
-        <div className="bg-surface-container rounded-xl p-lg border border-outline-variant">
-          <h2 className="font-headline-md text-headline-md text-on-surface mb-md">General Settings</h2>
-          <div className="space-y-md">
-            <div>
-              <label className="font-label-bold text-label-bold text-on-surface block mb-xs">Library Name</label>
-              <input 
-                type="text" 
-                defaultValue="Main Library" 
-                className="w-full px-md py-sm bg-surface border border-outline-variant rounded-lg font-body-base text-body-base text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-            </div>
-
-            <div>
-              <label className="font-label-bold text-label-bold text-on-surface block mb-xs">Location</label>
-              <input 
-                type="text" 
-                defaultValue="Main Campus" 
-                className="w-full px-md py-sm bg-surface border border-outline-variant rounded-lg font-body-base text-body-base text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-            </div>
-
-            <div>
-              <label className="font-label-bold text-label-bold text-on-surface block mb-xs">Total Desks</label>
-              <input 
-                type="number" 
-                defaultValue="120" 
-                className="w-full px-md py-sm bg-surface border border-outline-variant rounded-lg font-body-base text-body-base text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Enforcement Rules */}
-        <div className="bg-surface-container rounded-xl p-lg border border-outline-variant">
-          <h2 className="font-headline-md text-headline-md text-on-surface mb-md">Enforcement Rules</h2>
-          <div className="space-y-md">
-            <div>
-              <label className="font-label-bold text-label-bold text-on-surface block mb-xs">Away Timeout (minutes)</label>
-              <input 
-                type="number" 
-                defaultValue="30" 
-                className="w-full px-md py-sm bg-surface border border-outline-variant rounded-lg font-body-base text-body-base text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-              <p className="font-body-sm text-body-sm text-on-surface-variant mt-xs">Mark desk as abandoned after this many minutes</p>
-            </div>
-
-            <div>
-              <label className="font-label-bold text-label-bold text-on-surface block mb-xs">Auto-Release Timeout (minutes)</label>
-              <input 
-                type="number" 
-                defaultValue="60" 
-                className="w-full px-md py-sm bg-surface border border-outline-variant rounded-lg font-body-base text-body-base text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-              <p className="font-body-sm text-body-sm text-on-surface-variant mt-xs">Automatically release desk after this timeout</p>
-            </div>
-
-            <div className="flex items-center gap-sm">
-              <input 
-                type="checkbox" 
-                id="notifications" 
-                defaultChecked 
-                className="w-5 h-5 text-primary bg-surface border-outline-variant rounded focus:ring-2 focus:ring-primary"
-              />
-              <label htmlFor="notifications" className="font-body-base text-body-base text-on-surface">Send notifications to staff when desks are flagged</label>
-            </div>
-
-            <div className="flex items-center gap-sm">
-              <input 
-                type="checkbox" 
-                id="autorelease" 
-                defaultChecked 
-                className="w-5 h-5 text-primary bg-surface border-outline-variant rounded focus:ring-2 focus:ring-primary"
-              />
-              <label htmlFor="autorelease" className="font-body-base text-body-base text-on-surface">Enable automatic desk release</label>
-            </div>
-          </div>
-        </div>
-
-        {/* Operating Hours */}
-        <div className="bg-surface-container rounded-xl p-lg border border-outline-variant">
-          <h2 className="font-headline-md text-headline-md text-on-surface mb-md">Operating Hours</h2>
-          <div className="space-y-md">
-            <div className="grid grid-cols-2 gap-md">
-              <div>
-                <label className="font-label-bold text-label-bold text-on-surface block mb-xs">Opening Time</label>
-                <input 
-                  type="time" 
-                  defaultValue="07:00" 
-                  className="w-full px-md py-sm bg-surface border border-outline-variant rounded-lg font-body-base text-body-base text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-              </div>
-              <div>
-                <label className="font-label-bold text-label-bold text-on-surface block mb-xs">Closing Time</label>
-                <input 
-                  type="time" 
-                  defaultValue="23:00" 
-                  className="w-full px-md py-sm bg-surface border border-outline-variant rounded-lg font-body-base text-body-base text-on-surface focus:outline-none focus:ring-2 focus:ring-primary"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* QR Code Settings */}
-        <div className="bg-surface-container rounded-xl p-lg border border-outline-variant">
-          <h2 className="font-headline-md text-headline-md text-on-surface mb-md">QR Code Settings</h2>
-          <div className="space-y-md">
-            <div className="flex items-center gap-sm">
-              <input 
-                type="checkbox" 
-                id="qrRequired" 
-                defaultChecked 
-                className="w-5 h-5 text-primary bg-surface border-outline-variant rounded focus:ring-2 focus:ring-primary"
-              />
-              <label htmlFor="qrRequired" className="font-body-base text-body-base text-on-surface">Require QR code scan for check-in</label>
-            </div>
-
-            <div className="flex items-center gap-sm">
-              <input 
-                type="checkbox" 
-                id="qrCheckout" 
-                className="w-5 h-5 text-primary bg-surface border-outline-variant rounded focus:ring-2 focus:ring-primary"
-              />
-              <label htmlFor="qrCheckout" className="font-body-base text-body-base text-on-surface">Require QR code scan for check-out</label>
-            </div>
-
-            <button className="inline-flex items-center justify-center px-lg py-sm bg-surface border border-outline-variant text-primary font-label-bold text-label-bold rounded-lg hover:bg-surface-container-high transition-colors">
-              <span className="material-symbols-outlined mr-xs">qr_code</span>
-              Generate QR Codes
-            </button>
-          </div>
-        </div>
-
-        {/* Save Button */}
-        <div className="flex justify-end gap-sm">
-          <button className="inline-flex items-center justify-center px-xl py-md bg-surface border border-outline-variant text-on-surface font-label-bold text-label-bold rounded-lg hover:bg-surface-container-high transition-colors">
             Cancel
           </button>
-          <button className="inline-flex items-center justify-center px-xl py-md bg-primary text-on-primary font-label-bold text-label-bold rounded-lg hover:bg-surface-tint transition-colors shadow-md">
-            Save Changes
+          <button 
+            onClick={() => setHasChanges(false)}
+            className="flex-1 md:flex-none px-8 py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] flex items-center justify-center gap-2 group"
+          >
+            <span>Save Changes</span>
+            <span className="material-symbols-outlined text-sm group-hover:scale-110 transition-transform">check</span>
           </button>
         </div>
       </div>

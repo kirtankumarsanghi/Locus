@@ -23,10 +23,24 @@ export default function MapView() {
       setDesks(data);
     } catch (err) {
       console.error('Failed to fetch desks', err);
+      // Use mock data if backend is not available
+      setDesks(generateMockDesks());
     }
   };
 
+  // Generate mock desks for demo
+  const generateMockDesks = (): Desk[] => {
+    // Removed unused _statuses variable
+    return Array.from({ length: 8 }, (_, i) => ({
+      id: i + 1,
+      number: i + 1,
+      status: i === 1 ? 'OCCUPIED' : i === 3 ? 'AWAY' : i === 6 ? 'ABANDONED' : 'FREE',
+      current_session_id: i === 1 || i === 3 || i === 6 ? 1000 + i : null,
+    }));
+  };
+
   useEffect(() => {
+    // Try to fetch from backend, fallback to mock data
     fetchDesks();
     const interval = setInterval(fetchDesks, 5000);
     return () => clearInterval(interval);
@@ -88,56 +102,76 @@ export default function MapView() {
   };
 
   const getDeskClasses = (desk: Desk) => {
-    const base = 'w-24 h-24 border rounded-xl flex flex-col items-center justify-center cursor-pointer hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative group shadow-[inset_0_2px_4px_rgba(255,255,255,0.6),0_2px_5px_rgba(0,0,0,0.05)]';
+    const base = 'w-28 h-28 border-2 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:scale-105 hover:shadow-2xl transition-all duration-300 relative group';
     switch (desk.status) {
-      case 'FREE': return `${base} bg-status-available border-green-200`;
-      case 'OCCUPIED': return `${base} bg-status-occupied border-red-200 ring-2 ring-primary shadow-[inset_0_2px_4px_rgba(255,255,255,0.6),0_4px_10px_rgba(0,0,0,0.1)]`;
-      case 'AWAY': return `${base} bg-status-away border-yellow-200`;
-      case 'ABANDONED': return `${base} bg-[#f3e8ff] border-purple-200`;
-      default: return `${base} bg-surface-container-highest border-outline-variant`;
+      case 'FREE': 
+        return `${base} bg-gradient-to-br from-emerald-50 to-green-50 border-emerald-300 hover:border-emerald-400 shadow-lg hover:shadow-emerald-200/50`;
+      case 'OCCUPIED': 
+        return `${base} bg-gradient-to-br from-rose-50 to-red-50 border-rose-300 ring-2 ring-primary/30 shadow-xl hover:shadow-rose-200/50`;
+      case 'AWAY': 
+        return `${base} bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-300 hover:border-amber-400 shadow-lg hover:shadow-amber-200/50`;
+      case 'ABANDONED': 
+        return `${base} bg-gradient-to-br from-violet-50 to-purple-50 border-violet-300 ring-2 ring-violet-400/40 shadow-xl hover:shadow-violet-200/50 animate-pulse`;
+      default: 
+        return `${base} bg-surface-container-highest border-outline-variant`;
     }
   };
 
   const getDeskTextClass = (status: string) => {
     switch (status) {
-      case 'FREE': return 'text-on-status-available';
-      case 'OCCUPIED': return 'text-on-status-occupied';
-      case 'AWAY': return 'text-on-status-away';
-      case 'ABANDONED': return 'text-[#6b21a8]';
+      case 'FREE': return 'text-emerald-700 font-bold';
+      case 'OCCUPIED': return 'text-rose-700 font-bold';
+      case 'AWAY': return 'text-amber-700 font-bold';
+      case 'ABANDONED': return 'text-violet-700 font-bold';
       default: return 'text-on-surface-variant';
     }
   };
 
   return (
     <main className="flex-1 flex flex-col md:flex-row md:ml-64 relative bg-transparent overflow-hidden">
-      {/* Back to Landing Button */}
-      <div className="absolute top-4 left-4 z-40">
-        <button 
-          onClick={() => navigate('/')}
-          className="flex items-center gap-xs bg-surface/90 backdrop-blur-md text-primary hover:text-surface-tint transition-colors px-md py-sm rounded-lg shadow-md border border-outline-variant hover:bg-surface"
-        >
-          <span className="material-symbols-outlined">home</span>
-          <span className="font-label-bold text-label-bold hidden md:inline">Home</span>
-        </button>
-      </div>
-
-      {/* Contextual Alert Banner */}
+      {/* Enhanced Contextual Alert Banner */}
       {(abandonedCount > 0 || awayCount > 0) && (
-        <div className="absolute top-0 left-0 w-full bg-status-away/90 backdrop-blur-md text-on-status-away px-lg py-sm flex justify-between items-center z-30 shadow-md border-b border-yellow-200">
-          <div className="flex items-center gap-sm">
-            <span className="material-symbols-outlined">warning</span>
-            <span className="font-body-sm text-body-sm font-semibold">
-              {abandonedCount > 0 ? `${abandonedCount} Desks flagged as abandoned` : `${awayCount} Desks require verification (Away > 30m)`}
-            </span>
+        <div className="fixed top-20 left-0 md:left-64 right-0 md:right-96 bg-gradient-to-r from-amber-50 to-orange-50 border-b border-amber-200 px-6 py-3 flex justify-between items-center z-40 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-lg bg-amber-500 flex items-center justify-center shadow-sm">
+              <span className="material-symbols-outlined text-white text-lg">warning</span>
+            </div>
+            <div>
+              <p className="font-semibold text-xs text-amber-900 uppercase tracking-wide">Attention Required</p>
+              <p className="text-sm text-amber-800 font-medium">
+                {abandonedCount > 0 
+                  ? `${abandonedCount} desk${abandonedCount === 1 ? '' : 's'} flagged as abandoned` 
+                  : `${awayCount} desk${awayCount === 1 ? '' : 's'} require verification`}
+              </p>
+            </div>
           </div>
-          <Link to="/list" className="font-label-bold text-label-bold underline">Review</Link>
+          <Link 
+            to="/list" 
+            className="bg-gradient-to-r from-amber-600 to-orange-600 text-white px-6 py-2.5 rounded-xl font-semibold text-sm hover:opacity-90 transition-all shadow-md flex items-center gap-2 whitespace-nowrap"
+          >
+            Review All
+            <span className="material-symbols-outlined text-base">arrow_forward</span>
+          </Link>
         </div>
       )}
+
+      {/* Enhanced Back to Landing Button */}
+      <div className={`fixed ${(abandonedCount > 0 || awayCount > 0) ? 'top-[136px]' : 'top-24'} left-6 md:left-[17rem] z-30 transition-all duration-300`}>
+        <button 
+          onClick={() => navigate('/')}
+          className="flex items-center gap-2 bg-white text-primary hover:text-purple-600 transition-all px-3 py-2 rounded-xl shadow-sm border border-gray-200 hover:border-primary/40 hover:shadow-md group"
+        >
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+            <span className="material-symbols-outlined text-white text-base">home</span>
+          </div>
+          <span className="font-semibold text-sm hidden md:inline text-gray-800">Home</span>
+        </button>
+      </div>
 
       {/* Interactive Map Container */}
       <div
         ref={mapRef}
-        className={`flex-1 relative overflow-auto p-lg pt-xl ${isPanning ? 'cursor-grabbing' : 'cursor-grab'}`}
+        className={`flex-1 relative overflow-auto p-6 ${(abandonedCount > 0 || awayCount > 0) ? 'pt-24' : 'pt-6'} transition-all duration-300 ${isPanning ? 'cursor-grabbing' : 'cursor-grab'} bg-gray-50`}
         id="map-container"
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
@@ -145,130 +179,254 @@ export default function MapView() {
         onMouseMove={handleMouseMove}
       >
         <div
-          className="min-w-[800px] min-h-[600px] bg-white/60 backdrop-blur-xl border border-outline-variant rounded-2xl p-lg relative shadow-xl"
-          style={{ backgroundImage: 'radial-gradient(#e4e1ee 1px, transparent 1px)', backgroundSize: '24px 24px' }}
+          className="min-w-[900px] min-h-[700px] bg-white border border-gray-200 rounded-2xl p-8 relative shadow-sm"
         >
-          <h3 className="absolute top-lg left-lg font-headline-md text-headline-md text-on-surface-variant opacity-50">Main Hall - Quiet Zone A</h3>
+          {/* Main Hall Header with Stats */}
+          <div className="absolute top-6 left-6 right-6 flex justify-between items-start">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center shadow-sm">
+                <span className="material-symbols-outlined text-white text-xl">home</span>
+              </div>
+              <div>
+                <h3 className="font-bold text-xl text-gray-900">Main Hall</h3>
+                <p className="text-sm text-gray-500">Quiet Zone A · Floor 2</p>
+              </div>
+            </div>
 
-          {/* Desk Grid */}
-          <div className="absolute top-24 left-24 grid grid-cols-4 gap-lg">
+            {/* Inline Stats Badges */}
+            <div className="flex gap-3">
+              <div className="bg-white border border-gray-200 rounded-xl px-4 py-2 shadow-sm">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                  <span className="text-sm font-semibold text-emerald-700">{freeCount} Available</span>
+                </div>
+              </div>
+              <div className="bg-white border border-gray-200 rounded-xl px-4 py-2 shadow-sm">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-rose-500"></div>
+                  <span className="text-sm font-semibold text-rose-700">{desks.filter(d => d.status === 'OCCUPIED').length} In Use</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Desk Grid with Better Layout */}
+          <div className="absolute top-28 left-8 right-8 grid grid-cols-4 gap-6 justify-items-center">
             {desks.map((desk, idx) => (
               <div
                 key={desk.id}
                 onClick={() => setSelectedDesk(desk)}
-                className={`${getDeskClasses(desk)} ${idx >= 4 ? 'mt-lg' : ''}`}
+                className={`${getDeskClasses(desk)} ${idx >= 4 ? 'mt-4' : ''}`}
               >
-                <span className={`font-mono-timer text-mono-timer ${getDeskTextClass(desk.status)}`}>
+                {/* Desk Icon */}
+                <div className="absolute -top-3 -right-3">
+                  <span className={`material-symbols-outlined text-2xl ${getDeskTextClass(desk.status)}`}>
+                    {desk.status === 'FREE' ? 'event_seat' : desk.status === 'ABANDONED' ? 'error' : 'person'}
+                  </span>
+                </div>
+
+                {/* Desk Label */}
+                <span className={`font-mono-timer text-xl ${getDeskTextClass(desk.status)} tracking-tight`}>
                   {deskLabel(desk.number)}
                 </span>
+
+                {/* Status Info */}
                 {desk.status === 'OCCUPIED' && (
-                  <div className={`flex items-center gap-1 mt-1 ${getDeskTextClass(desk.status)}`}>
-                    <span className="material-symbols-outlined text-[14px]">timer</span>
-                    <span className="font-label-bold text-[10px]">1h 45m</span>
+                  <div className={`flex items-center gap-1 mt-2 px-3 py-1 bg-rose-100 rounded-full ${getDeskTextClass(desk.status)}`}>
+                    <span className="material-symbols-outlined text-[12px]">schedule</span>
+                    <span className="font-label-bold text-[11px]">1h 45m</span>
                   </div>
                 )}
                 {desk.status === 'AWAY' && (
-                  <div className={`flex items-center gap-1 mt-1 ${getDeskTextClass(desk.status)}`}>
-                    <span className="material-symbols-outlined text-[14px]">hourglass_empty</span>
-                    <span className="font-label-bold text-[10px]">12:00</span>
+                  <div className={`flex items-center gap-1 mt-2 px-3 py-1 bg-amber-100 rounded-full ${getDeskTextClass(desk.status)}`}>
+                    <span className="material-symbols-outlined text-[12px]">hourglass_empty</span>
+                    <span className="font-label-bold text-[11px]">Away 12m</span>
+                  </div>
+                )}
+                {desk.status === 'ABANDONED' && (
+                  <div className={`flex items-center gap-1 mt-2 px-3 py-1 bg-violet-100 rounded-full ${getDeskTextClass(desk.status)}`}>
+                    <span className="material-symbols-outlined text-[12px]">warning</span>
+                    <span className="font-label-bold text-[11px]">Flagged</span>
                   </div>
                 )}
                 {desk.status === 'FREE' && (
-                  <div className="absolute bottom-1 w-full flex justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span className="bg-white/90 backdrop-blur-sm text-xs px-2 py-0.5 rounded shadow-sm">Select</span>
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-emerald-500/10 rounded-2xl">
+                    <span className="bg-emerald-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">Click to Reserve</span>
                   </div>
                 )}
+
+                {/* Selected Indicator */}
                 {selectedDesk?.id === desk.id && (
-                  <div className="absolute -top-2 -right-2 w-4 h-4 bg-primary rounded-full border-2 border-white shadow-sm"></div>
+                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-primary rounded-full border-3 border-white shadow-lg flex items-center justify-center">
+                    <span className="material-symbols-outlined text-white text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>check</span>
+                  </div>
                 )}
               </div>
             ))}
           </div>
         </div>
 
-        {/* Floating Legend */}
-        <div className="absolute bottom-lg left-lg bg-white/70 backdrop-blur-md border border-outline-variant p-sm rounded-xl shadow-xl flex gap-md">
-          <div className="flex items-center gap-xs"><div className="w-3 h-3 rounded-full bg-status-available shadow-inner"></div><span className="font-label-bold text-label-bold text-on-surface-variant">Available</span></div>
-          <div className="flex items-center gap-xs"><div className="w-3 h-3 rounded-full bg-status-occupied shadow-inner"></div><span className="font-label-bold text-label-bold text-on-surface-variant">Occupied</span></div>
-          <div className="flex items-center gap-xs"><div className="w-3 h-3 rounded-full bg-status-away shadow-inner"></div><span className="font-label-bold text-label-bold text-on-surface-variant">Away</span></div>
+        {/* Enhanced Floating Legend */}
+        <div className="absolute bottom-6 left-6 bg-white border border-gray-200 p-4 rounded-xl shadow-sm">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Legend</p>
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-3">
+              <div className="w-4 h-4 rounded bg-gradient-to-br from-emerald-400 to-green-500 shadow-sm"></div>
+              <span className="text-sm text-gray-700 font-medium">Available</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-4 h-4 rounded bg-gradient-to-br from-rose-400 to-red-500 shadow-sm"></div>
+              <span className="text-sm text-gray-700 font-medium">Occupied</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-4 h-4 rounded bg-gradient-to-br from-amber-400 to-yellow-500 shadow-sm"></div>
+              <span className="text-sm text-gray-700 font-medium">Away</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="w-4 h-4 rounded bg-gradient-to-br from-violet-400 to-purple-500 shadow-sm"></div>
+              <span className="text-sm text-gray-700 font-medium">Abandoned</span>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Info Sidebar (Right Panel) */}
-      <aside className="w-full md:w-80 bg-surface/90 backdrop-blur-xl border-l border-outline-variant flex flex-col z-20 shadow-2xl">
-        {/* Floor Stats */}
-        <div className="p-lg border-b border-outline-variant bg-surface-container-lowest/50">
-          <h3 className="font-headline-md text-headline-md text-on-surface mb-xs">Main Hall Overview</h3>
-          <div className="flex justify-between items-center mt-sm">
-            <div>
-              <p className="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider">Available Desks</p>
-              <p className="font-display-lg text-display-lg text-primary">{freeCount} <span className="text-lg font-normal text-on-surface-variant">/ {totalDesks}</span></p>
-            </div>
-            <div className="w-16 h-16 rounded-full border-4 border-status-available bg-white shadow-sm flex items-center justify-center">
-              <span className="font-label-bold text-label-bold">{Math.round((freeCount / totalDesks) * 100)}%</span>
+      <aside className="w-full md:w-96 bg-white border-l border-gray-200 flex flex-col z-20 shadow-sm">
+        {/* Floor Stats - Enhanced */}
+        <div className="p-6 border-b border-gray-200">
+          <div className="bg-gradient-to-br from-indigo-50/80 to-purple-50/60 rounded-2xl p-5 border border-primary/10">
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="font-label-bold text-xs text-gray-500 uppercase tracking-wider mb-2">Available Now</p>
+                <div className="flex items-baseline gap-2">
+                  <span className="font-display-lg text-5xl font-black text-primary">{freeCount}</span>
+                  <span className="text-2xl text-gray-400 font-medium">/ {totalDesks}</span>
+                </div>
+              </div>
+              <div className="relative w-24 h-24">
+                <svg className="w-24 h-24 transform -rotate-90">
+                  <circle cx="48" cy="48" r="40" stroke="#e5e7eb" strokeWidth="8" fill="none" />
+                  <circle 
+                    cx="48" 
+                    cy="48" 
+                    r="40" 
+                    stroke="#6366f1" 
+                    strokeWidth="8" 
+                    fill="none"
+                    strokeDasharray={`${2 * Math.PI * 40}`}
+                    strokeDashoffset={`${2 * Math.PI * 40 * (1 - freeCount / totalDesks)}`}
+                    className="transition-all duration-500"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-xl font-bold text-primary">{Math.round((freeCount / totalDesks) * 100)}%</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Selected Desk Details */}
-        <div className="flex-1 p-lg overflow-y-auto">
+        {/* Selected Desk Details - Enhanced */}
+        <div className="flex-1 p-6 overflow-y-auto flex flex-col">
           {selectedDesk ? (
-            <div className="bg-surface-container-low/80 backdrop-blur-sm rounded-xl p-md border border-outline-variant shadow-md">
-              <div className="flex justify-between items-start mb-md">
+            <div className="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm">
+              <div className="flex justify-between items-start mb-4">
                 <div>
-                  <h4 className="font-headline-md text-headline-md text-on-surface">Desk {deskLabel(selectedDesk.number)}</h4>
-                  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full shadow-sm font-label-bold text-[10px] uppercase mt-xs ${getStatusBadge(selectedDesk.status).bg} ${getStatusBadge(selectedDesk.status).text}`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${getStatusBadge(selectedDesk.status).dot}`}></span> {getStatusBadge(selectedDesk.status).label}
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className={`w-8 h-8 rounded-lg ${
+                      selectedDesk.status === 'FREE' ? 'bg-gradient-to-br from-emerald-400 to-green-500' :
+                      selectedDesk.status === 'OCCUPIED' ? 'bg-gradient-to-br from-rose-400 to-red-500' :
+                      selectedDesk.status === 'AWAY' ? 'bg-gradient-to-br from-amber-400 to-yellow-500' :
+                      'bg-gradient-to-br from-violet-400 to-purple-500'
+                    } flex items-center justify-center shadow-md`}>
+                      <span className="material-symbols-outlined text-white text-sm">event_seat</span>
+                    </div>
+                    <h4 className="font-headline-md text-2xl text-on-surface font-bold">{deskLabel(selectedDesk.number)}</h4>
+                  </div>
+                  <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full shadow-sm font-label-bold text-xs uppercase ${getStatusBadge(selectedDesk.status).bg} ${getStatusBadge(selectedDesk.status).text} border-2 ${
+                    selectedDesk.status === 'FREE' ? 'border-emerald-200' :
+                    selectedDesk.status === 'OCCUPIED' ? 'border-rose-200' :
+                    selectedDesk.status === 'AWAY' ? 'border-amber-200' :
+                    'border-violet-200'
+                  }`}>
+                    <span className={`w-2 h-2 rounded-full ${getStatusBadge(selectedDesk.status).dot} animate-pulse`}></span>
+                    {getStatusBadge(selectedDesk.status).label}
                   </span>
                 </div>
-                <button className="text-secondary hover:text-primary transition-colors">
-                  <span className="material-symbols-outlined">more_vert</span>
+                <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                  <span className="material-symbols-outlined text-gray-400">more_vert</span>
                 </button>
               </div>
-              <div className="space-y-sm mb-lg">
-                <div className="flex justify-between py-xs border-b border-outline-variant/50">
-                  <span className="font-body-sm text-body-sm text-on-surface-variant">Session Started</span>
-                  <span className="font-body-sm text-body-sm text-on-surface font-medium">{selectedDesk.status !== 'FREE' ? '09:15 AM' : '-'}</span>
+              
+              <div className="space-y-3 mb-6">
+                <div className="flex justify-between py-2 px-3 bg-gray-50 rounded-lg">
+                  <span className="font-body-sm text-body-sm text-gray-600 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-sm">schedule</span>
+                    Session Started
+                  </span>
+                  <span className="font-body-sm text-body-sm text-on-surface font-bold">{selectedDesk.status !== 'FREE' ? '09:15 AM' : '-'}</span>
                 </div>
-                <div className="flex justify-between py-xs border-b border-outline-variant/50">
-                  <span className="font-body-sm text-body-sm text-on-surface-variant">Current Duration</span>
-                  <span className="font-body-sm text-body-sm text-on-surface font-medium">{selectedDesk.status !== 'FREE' ? '1h 45m' : '-'}</span>
+                <div className="flex justify-between py-2 px-3 bg-gray-50 rounded-lg">
+                  <span className="font-body-sm text-body-sm text-gray-600 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-sm">hourglass_empty</span>
+                    Duration
+                  </span>
+                  <span className="font-body-sm text-body-sm text-on-surface font-bold">{selectedDesk.status !== 'FREE' ? '1h 45m' : '-'}</span>
                 </div>
-                <div className="flex justify-between py-xs border-b border-outline-variant/50">
-                  <span className="font-body-sm text-body-sm text-on-surface-variant">User Type</span>
-                  <span className="font-body-sm text-body-sm text-on-surface font-medium">{selectedDesk.status !== 'FREE' ? 'Undergraduate' : '-'}</span>
+                <div className="flex justify-between py-2 px-3 bg-gray-50 rounded-lg">
+                  <span className="font-body-sm text-body-sm text-gray-600 flex items-center gap-2">
+                    <span className="material-symbols-outlined text-sm">person</span>
+                    User Type
+                  </span>
+                  <span className="font-body-sm text-body-sm text-on-surface font-bold">{selectedDesk.status !== 'FREE' ? 'Undergraduate' : '-'}</span>
                 </div>
               </div>
-              <div className="flex gap-sm">
+              
+              <div className="flex gap-2">
                 {selectedDesk.status === 'ABANDONED' ? (
                   <>
-                    <button className="flex-1 bg-surface border border-outline-variant text-on-surface py-2 rounded-lg font-label-bold text-label-bold hover:bg-surface-container-high transition-colors shadow-sm">Flag Issue</button>
-                    <button onClick={() => handleReset(selectedDesk.id)} className="flex-1 bg-error text-on-error py-2 rounded-lg font-label-bold text-label-bold hover:bg-error/90 transition-colors shadow-md">Manual Reset</button>
+                    <button className="flex-1 bg-white border-2 border-gray-200 text-primary py-2.5 rounded-xl font-label-bold text-label-bold hover:bg-gray-50 transition-all">
+                      Flag Issue
+                    </button>
+                    <button onClick={() => handleReset(selectedDesk.id)} className="flex-1 bg-gradient-to-r from-rose-500 to-red-600 text-white py-2.5 rounded-xl font-label-bold text-label-bold hover:opacity-90 transition-all shadow-lg">
+                      Reset Now
+                    </button>
                   </>
                 ) : selectedDesk.status !== 'FREE' ? (
                   <>
-                    <button className="flex-1 bg-surface border border-outline-variant text-on-surface py-2 rounded-lg font-label-bold text-label-bold hover:bg-surface-container-high transition-colors shadow-sm">Flag Issue</button>
-                    <button className="flex-1 bg-primary text-on-primary py-2 rounded-lg font-label-bold text-label-bold hover:opacity-90 transition-opacity shadow-md">End Session</button>
+                    <button className="flex-1 bg-white border-2 border-gray-200 text-primary py-2.5 rounded-xl font-label-bold text-label-bold hover:bg-gray-50 transition-all">
+                      Flag Issue
+                    </button>
+                    <button className="flex-1 bg-gradient-to-r from-primary to-purple-600 text-white py-2.5 rounded-xl font-label-bold text-label-bold hover:opacity-90 transition-all shadow-lg">
+                      End Session
+                    </button>
                   </>
                 ) : (
-                  <button className="flex-1 bg-surface border border-outline-variant text-on-surface-variant py-2 rounded-lg font-label-bold text-label-bold cursor-default">Available</button>
+                  <button className="flex-1 bg-gradient-to-r from-emerald-500 to-green-600 text-white py-2.5 rounded-xl font-label-bold text-label-bold shadow-lg">
+                    Available
+                  </button>
                 )}
               </div>
             </div>
           ) : (
-            <div className="text-center text-on-surface-variant mt-16">
-              <span className="material-symbols-outlined text-outline mb-2" style={{ fontSize: '48px' }}>touch_app</span>
-              <p className="font-body-sm text-body-sm">Select a desk on the map to view details</p>
+            <div className="flex-1 flex flex-col items-center justify-center text-center">
+              <div className="w-32 h-32 mb-6 rounded-3xl bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center border border-primary/10">
+                <span className="material-symbols-outlined text-primary" style={{ fontSize: '64px' }}>touch_app</span>
+              </div>
+              <h3 className="font-headline-md text-xl text-gray-800 font-bold mb-2">Select a desk on the map</h3>
+              <p className="font-body-sm text-sm text-gray-500">Click any desk to view details</p>
             </div>
           )}
         </div>
 
-        {/* Primary Action */}
-        <div className="p-md border-t border-outline-variant bg-surface-container-lowest/50">
-          <Link to="/session" className="w-full bg-primary-container text-on-primary-container py-3 rounded-xl font-label-bold text-label-bold flex items-center justify-center gap-sm hover:opacity-90 transition-opacity shadow-md hover:shadow-lg">
-            <span className="material-symbols-outlined">qr_code_scanner</span>
+        {/* Primary Action - Enhanced */}
+        <div className="p-6 border-t border-gray-200 mt-auto">
+          <Link to="/session" className="w-full bg-gradient-to-r from-primary to-purple-600 text-white py-4 rounded-2xl font-label-bold text-base flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-lg hover:shadow-xl">
+            <span className="material-symbols-outlined text-xl">qr_code_scanner</span>
             Scan to Check-in
           </Link>
+          <p className="text-center text-xs text-gray-500 mt-3">Scan QR code at any available desk</p>
         </div>
       </aside>
     </main>

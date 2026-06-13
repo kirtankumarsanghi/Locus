@@ -19,10 +19,23 @@ export default function DeskList() {
       setDesks(data);
     } catch (err) {
       console.error('Failed to fetch desks', err);
+      // Use mock data if backend is not available
+      setDesks(generateMockDesks());
     }
   };
 
+  // Generate mock desks for demo
+  const generateMockDesks = (): Desk[] => {
+    return Array.from({ length: 8 }, (_, i) => ({
+      id: i + 1,
+      number: i + 1,
+      status: i === 1 ? 'OCCUPIED' : i === 3 ? 'AWAY' : i === 6 ? 'ABANDONED' : 'FREE',
+      current_session_id: i === 1 || i === 3 || i === 6 ? 1000 + i : null,
+    }));
+  };
+
   useEffect(() => {
+    // Try to fetch from backend, fallback to mock data
     fetchDesks();
     const interval = setInterval(fetchDesks, 5000);
     return () => clearInterval(interval);
@@ -63,142 +76,226 @@ export default function DeskList() {
   };
 
   return (
-    <main className="flex-1 md:ml-64 p-lg md:p-xl max-w-container-max mx-auto mb-20 md:mb-0 overflow-y-auto">
-      {/* Back Button */}
-      <div className="mb-lg">
-        <button 
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-xs text-primary hover:text-surface-tint transition-colors p-xs hover:bg-surface-container-high rounded-lg"
-        >
-          <span className="material-symbols-outlined">arrow_back</span>
-          <span className="font-label-bold text-label-bold">Back to Map</span>
-        </button>
+    <main className="flex-1 md:ml-72 p-6 md:p-8 mx-auto mb-20 md:mb-0 overflow-y-auto bg-gradient-to-br from-indigo-50/20 via-white to-purple-50/20">
+      {/* Back Button - Casual Style */}
+      <button 
+        onClick={() => navigate(-1)}
+        className="flex items-center gap-2 text-primary hover:text-purple-600 transition-all mb-8 group"
+      >
+        <span className="material-symbols-outlined group-hover:-translate-x-1 transition-transform">arrow_back</span>
+        <span className="font-semibold">Back to Map</span>
+      </button>
+
+      {/* Hero Section */}
+      <div className="mb-8">
+        <h1 className="text-3xl md:text-4xl font-bold text-on-surface mb-2">Desk Overview</h1>
+        <p className="text-on-surface-variant">Real-time status of all desks in Main Hall</p>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-lg mb-xl">
-        <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl p-lg flex flex-col justify-between shadow-sm">
-          <div>
-            <p className="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider mb-xs">Total Occupancy</p>
-            <div className="flex items-end gap-sm">
-              <h3 className="font-display-lg text-display-lg text-primary">{occupancy}%</h3>
-              <span className="font-body-sm text-body-sm text-on-surface-variant mb-1">{occupiedCount + awayCount + abandonedCount} / {totalDesks} Desks</span>
+      {/* Summary Cards - More Natural */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+        {/* Occupancy Card */}
+        <div className="bg-white border-2 border-indigo-100 rounded-2xl p-6 hover:shadow-lg transition-shadow">
+          <div className="flex items-start justify-between mb-4">
+            <div>
+              <p className="text-xs font-semibold text-indigo-600 uppercase tracking-wide mb-2">Occupancy</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-4xl font-bold text-indigo-600">{occupancy}%</span>
+                <span className="text-sm text-gray-500">{occupiedCount + awayCount + abandonedCount}/{totalDesks}</span>
+              </div>
+            </div>
+            <div className="w-12 h-12 rounded-xl bg-indigo-100 flex items-center justify-center">
+              <span className="material-symbols-outlined text-indigo-600">assessment</span>
             </div>
           </div>
-          <div className="mt-md w-full bg-surface-variant rounded-full h-2">
-            <div className="bg-primary h-2 rounded-full shadow-[0_0_10px_rgba(53,37,205,0.5)]" style={{ width: `${occupancy}%` }}></div>
+          <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+            <div 
+              className="bg-gradient-to-r from-indigo-500 to-purple-600 h-full rounded-full transition-all duration-500" 
+              style={{ width: `${occupancy}%` }}
+            />
           </div>
         </div>
 
-        <div className="bg-error-container/50 border border-error/30 rounded-2xl p-lg flex flex-col justify-between relative overflow-hidden shadow-sm">
-          <div className="absolute -top-10 -right-10 w-32 h-32 bg-error/20 rounded-full blur-2xl"></div>
-          <div className="flex justify-between items-start relative z-10">
+        {/* Abandoned Card */}
+        <div className={`bg-white border-2 rounded-2xl p-6 hover:shadow-lg transition-shadow ${abandonedCount > 0 ? 'border-rose-200 bg-rose-50/30' : 'border-gray-100'}`}>
+          <div className="flex items-start justify-between mb-4">
             <div>
-              <p className="font-label-bold text-label-bold text-error uppercase tracking-wider mb-xs">Abandoned Desks Flagged</p>
-              <h3 className="font-display-lg text-display-lg text-error">{abandonedCount}</h3>
+              <p className="text-xs font-semibold text-rose-600 uppercase tracking-wide mb-2">Needs Attention</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-4xl font-bold text-rose-600">{abandonedCount}</span>
+                <span className="text-sm text-gray-500">desks</span>
+              </div>
             </div>
-            <span className="material-symbols-outlined text-error">warning</span>
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${abandonedCount > 0 ? 'bg-rose-100 animate-pulse' : 'bg-gray-100'}`}>
+              <span className={`material-symbols-outlined ${abandonedCount > 0 ? 'text-rose-600' : 'text-gray-400'}`}>
+                {abandonedCount > 0 ? 'error' : 'check_circle'}
+              </span>
+            </div>
           </div>
           {abandonedCount > 0 && (
-            <button className="mt-md font-label-bold text-label-bold text-on-error bg-error hover:bg-error/90 transition-colors px-4 py-2 rounded-lg flex items-center justify-center gap-xs shadow-[0_4px_12px_rgba(186,26,26,0.3)] w-max relative z-10">
-              Review all flagged <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>arrow_forward</span>
+            <button className="w-full bg-rose-600 hover:bg-rose-700 text-white py-2.5 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2">
+              Review Flagged
+              <span className="material-symbols-outlined text-sm">arrow_forward</span>
             </button>
+          )}
+          {abandonedCount === 0 && (
+            <p className="text-sm text-gray-500 text-center py-2">All good! 👍</p>
           )}
         </div>
 
-        <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl p-lg flex flex-col justify-between shadow-sm">
-          <div>
-            <p className="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider mb-xs">Active Timers</p>
-            <div className="flex items-end gap-sm">
-              <h3 className="font-display-lg text-display-lg text-primary">{awayCount}</h3>
-              <span className="font-body-sm text-body-sm text-on-surface-variant mb-1">Students Away</span>
+        {/* Away Card */}
+        <div className="bg-white border-2 border-amber-100 rounded-2xl p-6 hover:shadow-lg transition-shadow">
+          <div className="flex items-start justify-between mb-4">
+            <div>
+              <p className="text-xs font-semibold text-amber-600 uppercase tracking-wide mb-2">Away</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-4xl font-bold text-amber-600">{awayCount}</span>
+                <span className="text-sm text-gray-500">students</span>
+              </div>
+            </div>
+            <div className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center">
+              <span className="material-symbols-outlined text-amber-600">schedule</span>
             </div>
           </div>
-          <div className="mt-md flex gap-sm text-on-surface-variant font-label-bold text-label-bold">
-            <span className="flex items-center gap-xs"><div className="w-2.5 h-2.5 rounded-full bg-[#eab308] shadow-[0_0_6px_rgba(234,179,8,0.6)]"></div> {Math.ceil(awayCount * 0.66)} &lt; 15m</span>
-            <span className="flex items-center gap-xs"><div className="w-2.5 h-2.5 rounded-full bg-[#f97316] shadow-[0_0_6px_rgba(249,115,22,0.6)]"></div> {Math.floor(awayCount * 0.34)} &gt; 15m</span>
+          <div className="flex gap-3 text-xs font-medium">
+            <span className="flex items-center gap-1.5 text-amber-700">
+              <div className="w-2 h-2 rounded-full bg-amber-400" />
+              {Math.ceil(awayCount * 0.66)} quick
+            </span>
+            <span className="flex items-center gap-1.5 text-orange-700">
+              <div className="w-2 h-2 rounded-full bg-orange-500" />
+              {Math.floor(awayCount * 0.34)} long
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Data Table */}
-      <div className="bg-surface-container-lowest border border-outline-variant rounded-2xl overflow-hidden shadow-sm">
-        <div className="p-lg border-b border-outline-variant/50 flex justify-between items-center bg-surface-bright">
-          <h2 className="font-headline-md text-headline-md text-on-surface">Desk Status Roster</h2>
-          <div className="flex gap-sm">
-            <button className="border border-outline-variant px-md py-sm rounded-lg font-label-bold text-label-bold text-on-surface hover:bg-surface-container-low transition-colors flex items-center gap-xs">
-              <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>filter_list</span> Filter
+      {/* Table Section - Natural Feel */}
+      <div className="bg-white border-2 border-gray-100 rounded-2xl overflow-hidden shadow-sm">
+        <div className="p-6 border-b-2 border-gray-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-bold text-on-surface">All Desks</h2>
+            <p className="text-sm text-gray-500 mt-0.5">Live status updates</p>
+          </div>
+          <div className="flex gap-3">
+            <button className="px-4 py-2 border-2 border-gray-200 rounded-xl font-medium text-gray-700 hover:border-indigo-200 hover:bg-indigo-50 transition-all flex items-center gap-2">
+              <span className="material-symbols-outlined text-lg">tune</span>
+              <span className="hidden sm:inline">Filter</span>
             </button>
-            <div className="relative">
-              <span className="material-symbols-outlined absolute left-sm top-1/2 -translate-y-1/2 text-on-surface-variant" style={{ fontSize: '18px' }}>search</span>
+            <div className="relative flex-1 md:flex-none">
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">search</span>
               <input
-                className="pl-xl pr-sm py-sm rounded-lg border border-outline-variant bg-surface font-body-sm text-body-sm text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none"
-                placeholder="Search Desk or ID..."
+                className="w-full md:w-64 pl-10 pr-4 py-2 rounded-xl border-2 border-gray-200 focus:border-indigo-300 focus:ring focus:ring-indigo-100 outline-none transition-all"
+                placeholder="Search..."
                 type="text"
               />
             </div>
           </div>
         </div>
+        
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse min-w-[800px]">
+          <table className="w-full text-left">
             <thead>
-              <tr className="bg-surface-container-low/50 border-b border-outline-variant/50">
-                <th className="px-lg py-sm font-label-bold text-label-bold text-on-surface-variant uppercase">Desk #</th>
-                <th className="px-lg py-sm font-label-bold text-label-bold text-on-surface-variant uppercase">Status</th>
-                <th className="px-lg py-sm font-label-bold text-label-bold text-on-surface-variant uppercase">Occupant ID</th>
-                <th className="px-lg py-sm font-label-bold text-label-bold text-on-surface-variant uppercase">Last Activity</th>
-                <th className="px-lg py-sm font-label-bold text-label-bold text-on-surface-variant uppercase">Timer</th>
-                <th className="px-lg py-sm font-label-bold text-label-bold text-on-surface-variant uppercase text-right">Actions</th>
+              <tr className="border-b-2 border-gray-100 bg-gray-50">
+                <th className="px-6 py-4 text-xs font-bold text-gray-600 uppercase tracking-wide">Desk</th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-600 uppercase tracking-wide">Status</th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-600 uppercase tracking-wide">Session ID</th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-600 uppercase tracking-wide">Last Seen</th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-600 uppercase tracking-wide">Time</th>
+                <th className="px-6 py-4 text-xs font-bold text-gray-600 uppercase tracking-wide text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="font-body-base text-body-base">
-              {desks.map(desk => {
+            <tbody>
+              {desks.map((desk) => {
                 const badge = getStatusBadge(desk.status);
                 return (
                   <tr
                     key={desk.id}
-                    className={`border-b border-outline-variant/30 table-row-hover transition-colors ${desk.status === 'ABANDONED' ? 'bg-error-container/10' : desk.status === 'AWAY' ? 'bg-surface-container-low/30' : ''}`}
+                    className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${
+                      desk.status === 'ABANDONED' ? 'bg-rose-50/30' : 
+                      desk.status === 'AWAY' ? 'bg-amber-50/20' : ''
+                    }`}
                   >
-                    <td className={`px-lg py-lg font-label-bold text-label-bold ${desk.status === 'FREE' ? 'text-on-surface-variant' : ''}`}>Floor 2 - {deskLabel(desk.number)}</td>
-                    <td className="px-lg py-lg">
-                      <span className={`inline-flex items-center gap-xs px-3 py-1.5 rounded-full font-label-bold text-label-bold ${badge.bg} ${badge.text}`}>
-                        <div className={`w-2 h-2 rounded-full ${badge.dot}`}></div> {badge.label}
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold ${
+                          desk.status === 'FREE' ? 'bg-emerald-100 text-emerald-700' :
+                          desk.status === 'OCCUPIED' ? 'bg-indigo-100 text-indigo-700' :
+                          desk.status === 'AWAY' ? 'bg-amber-100 text-amber-700' :
+                          'bg-rose-100 text-rose-700'
+                        }`}>
+                          {deskLabel(desk.number).split('-')[1]}
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-900">Floor 2 - {deskLabel(desk.number)}</p>
+                          <p className="text-xs text-gray-500">Zone A</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full font-medium text-xs ${
+                        desk.status === 'FREE' ? 'bg-emerald-100 text-emerald-700' :
+                        desk.status === 'OCCUPIED' ? 'bg-indigo-100 text-indigo-700' :
+                        desk.status === 'AWAY' ? 'bg-amber-100 text-amber-700' :
+                        'bg-rose-100 text-rose-700'
+                      }`}>
+                        <div className={`w-1.5 h-1.5 rounded-full ${
+                          desk.status === 'FREE' ? 'bg-emerald-500' :
+                          desk.status === 'OCCUPIED' ? 'bg-indigo-500' :
+                          desk.status === 'AWAY' ? 'bg-amber-500' :
+                          'bg-rose-500 animate-pulse'
+                        }`} />
+                        {badge.label}
                       </span>
                     </td>
-                    <td className={`px-lg py-lg font-mono text-sm ${desk.status === 'FREE' ? 'text-outline-variant' : 'text-on-surface-variant'}`}>
-                      {desk.current_session_id ? `S-${desk.current_session_id.toString().padStart(6, '0')}` : '-'}
+                    <td className="px-6 py-4 font-mono text-sm text-gray-600">
+                      {desk.current_session_id ? `#${desk.current_session_id.toString().padStart(4, '0')}` : '-'}
                     </td>
-                    <td className={`px-lg py-lg ${desk.status === 'ABANDONED' ? 'text-error' : desk.status === 'FREE' ? 'text-outline-variant' : 'text-on-surface-variant'}`}>
-                      {desk.status === 'FREE' ? '-' : desk.status === 'ABANDONED' ? '45 mins ago' : desk.status === 'AWAY' ? '18 mins ago' : '2 mins ago'}
+                    <td className={`px-6 py-4 text-sm ${desk.status === 'ABANDONED' ? 'text-rose-600 font-medium' : 'text-gray-600'}`}>
+                      {desk.status === 'FREE' ? '-' : 
+                       desk.status === 'ABANDONED' ? '45m ago' : 
+                       desk.status === 'AWAY' ? '18m ago' : 
+                       '2m ago'}
                     </td>
-                    <td className="px-lg py-lg">
+                    <td className="px-6 py-4">
                       {desk.status === 'AWAY' && (
-                        <span className="font-mono-timer text-mono-timer text-[#854d0e] flex items-center gap-xs">
-                          <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>timer</span> 12:05
+                        <span className="font-mono text-sm text-amber-700 flex items-center gap-1.5 font-medium">
+                          <span className="material-symbols-outlined text-base">timer</span>
+                          12:05
                         </span>
                       )}
                       {desk.status === 'ABANDONED' && (
-                        <span className="font-mono-timer text-mono-timer text-[#6b21a8] flex items-center gap-xs">
-                          <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>update</span> +15:00
+                        <span className="font-mono text-sm text-rose-700 flex items-center gap-1.5 font-medium">
+                          <span className="material-symbols-outlined text-base">warning</span>
+                          15:00
                         </span>
                       )}
                       {(desk.status === 'FREE' || desk.status === 'OCCUPIED') && (
-                        <span className={desk.status === 'FREE' ? 'text-outline-variant' : 'text-on-surface-variant'}>-</span>
+                        <span className="text-gray-400">-</span>
                       )}
                     </td>
-                    <td className="px-lg py-lg text-right">
+                    <td className="px-6 py-4 text-right">
                       {desk.status === 'ABANDONED' && (
-                        <div className="flex justify-end gap-sm">
-                          <button className="border border-outline-variant px-md py-1.5 rounded-lg text-secondary font-label-bold text-label-bold hover:bg-surface-container-high transition-colors">Nudge</button>
-                          <button onClick={() => handleReset(desk.id)} className="bg-error text-on-error px-md py-1.5 rounded-lg font-label-bold text-label-bold hover:bg-error/90 transition-colors shadow-sm">Manual Reset</button>
+                        <div className="flex justify-end gap-2">
+                          <button className="px-3 py-1.5 border-2 border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:border-indigo-200 hover:bg-indigo-50 transition-all">
+                            Remind
+                          </button>
+                          <button 
+                            onClick={() => handleReset(desk.id)} 
+                            className="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-sm font-medium transition-colors"
+                          >
+                            Reset
+                          </button>
                         </div>
                       )}
                       {desk.status === 'AWAY' && (
-                        <button className="border border-outline-variant px-md py-1.5 rounded-lg text-secondary font-label-bold text-label-bold hover:bg-surface-container-high transition-colors">Send Nudge</button>
+                        <button className="px-3 py-1.5 border-2 border-amber-200 bg-amber-50 rounded-lg text-sm font-medium text-amber-700 hover:bg-amber-100 transition-colors">
+                          Nudge
+                        </button>
                       )}
                       {(desk.status === 'OCCUPIED' || desk.status === 'FREE') && (
-                        <button className={`p-sm ${desk.status === 'FREE' ? 'text-outline' : 'text-secondary'} hover:bg-surface-container-high rounded-lg transition-colors`} title="More Options">
-                          <span className="material-symbols-outlined">more_vert</span>
+                        <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors" title="Options">
+                          <span className="material-symbols-outlined text-gray-400">more_horiz</span>
                         </button>
                       )}
                     </td>
@@ -208,14 +305,15 @@ export default function DeskList() {
             </tbody>
           </table>
         </div>
-        {/* Pagination */}
-        <div className="p-md flex justify-between items-center bg-surface-bright border-t border-outline-variant/50">
-          <span className="font-body-sm text-body-sm text-on-surface-variant">Showing 1-{desks.length} of {desks.length} results</span>
-          <div className="flex gap-xs">
-            <button className="p-xs border border-outline-variant rounded hover:bg-surface-container-low text-secondary disabled:opacity-50" disabled>
+        
+        {/* Footer */}
+        <div className="px-6 py-4 flex justify-between items-center border-t-2 border-gray-100 bg-gray-50">
+          <span className="text-sm text-gray-600">{desks.length} {desks.length === 1 ? 'desk' : 'desks'} total</span>
+          <div className="flex gap-2">
+            <button className="p-2 border-2 border-gray-200 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-40" disabled>
               <span className="material-symbols-outlined">chevron_left</span>
             </button>
-            <button className="p-xs border border-outline-variant rounded hover:bg-surface-container-low text-secondary">
+            <button className="p-2 border-2 border-gray-200 rounded-lg hover:bg-gray-100 transition-colors">
               <span className="material-symbols-outlined">chevron_right</span>
             </button>
           </div>

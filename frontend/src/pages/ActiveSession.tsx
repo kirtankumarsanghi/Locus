@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import Logo from '../components/Logo';
 
 export default function ActiveSession() {
   const [deskNumber, setDeskNumber] = useState('');
@@ -108,10 +109,7 @@ export default function ActiveSession() {
           <span className="material-symbols-outlined">arrow_back</span>
           <span className="font-label-bold text-label-bold hidden sm:inline">Back</span>
         </button>
-        <div className="flex items-center gap-sm">
-          <Link to="/" className="font-display-lg text-display-lg text-primary font-bold hidden md:block">Locus</Link>
-          <Link to="/" className="font-display-lg-mobile text-display-lg-mobile text-primary font-bold md:hidden">Locus</Link>
-        </div>
+        <Logo variant="horizontal" showTagline={false} className="scale-75" />
         <div className="flex items-center gap-sm">
           <button className="p-xs text-secondary hover:bg-surface-container-high transition-colors rounded-full">
             <span className="material-symbols-outlined">notifications</span>
