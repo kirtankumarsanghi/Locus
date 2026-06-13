@@ -159,9 +159,9 @@ export default function MapView() {
       <div className={`fixed ${(abandonedCount > 0 || awayCount > 0) ? 'top-[136px]' : 'top-24'} left-6 md:left-[17rem] z-30 transition-all duration-300`}>
         <button 
           onClick={() => navigate('/')}
-          className="flex items-center gap-2 bg-white text-primary hover:text-purple-600 transition-all px-3 py-2 rounded-xl shadow-sm border border-gray-200 hover:border-primary/40 hover:shadow-md group"
+          className="flex items-center gap-2 bg-white text-primary hover:text-indigo-700 transition-all px-3 py-2 rounded-xl shadow-sm border border-gray-200 hover:border-primary/40 hover:shadow-md group"
         >
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-indigo-600 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
             <span className="material-symbols-outlined text-white text-base">home</span>
           </div>
           <span className="font-semibold text-sm hidden md:inline text-gray-800">Home</span>
@@ -184,7 +184,7 @@ export default function MapView() {
           {/* Main Hall Header with Stats */}
           <div className="absolute top-6 left-6 right-6 flex justify-between items-start">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center shadow-sm">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-indigo-600 flex items-center justify-center shadow-sm">
                 <span className="material-symbols-outlined text-white text-xl">home</span>
               </div>
               <div>
@@ -398,7 +398,7 @@ export default function MapView() {
                     <button className="flex-1 bg-white border-2 border-gray-200 text-primary py-2.5 rounded-xl font-label-bold text-label-bold hover:bg-gray-50 transition-all">
                       Flag Issue
                     </button>
-                    <button className="flex-1 bg-gradient-to-r from-primary to-purple-600 text-white py-2.5 rounded-xl font-label-bold text-label-bold hover:opacity-90 transition-all shadow-lg">
+                    <button className="flex-1 bg-gradient-to-r from-primary to-indigo-600 text-white py-2.5 rounded-xl font-label-bold text-label-bold hover:opacity-90 transition-all shadow-lg">
                       End Session
                     </button>
                   </>
@@ -422,7 +422,7 @@ export default function MapView() {
 
         {/* Primary Action - Enhanced */}
         <div className="p-6 border-t border-gray-200 mt-auto">
-          <Link to="/session" className="w-full bg-gradient-to-r from-primary to-purple-600 text-white py-4 rounded-2xl font-label-bold text-base flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-lg hover:shadow-xl">
+          <Link to="/session" className="w-full bg-gradient-to-r from-primary to-indigo-600 text-white py-4 rounded-2xl font-label-bold text-base flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-lg hover:shadow-xl">
             <span className="material-symbols-outlined text-xl">qr_code_scanner</span>
             Scan to Check-in
           </Link>

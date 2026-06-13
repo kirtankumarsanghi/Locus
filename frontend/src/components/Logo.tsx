@@ -141,7 +141,7 @@ export default function Logo({ variant = 'default', showTagline = true, classNam
 
         .locus-tagline {
           font-family: 'Inter', sans-serif;
-          font-size: 12px;
+          font-size: 16px;
           font-weight: 600;
           letter-spacing: 0.28em;
           text-transform: uppercase;
@@ -155,7 +155,7 @@ export default function Logo({ variant = 'default', showTagline = true, classNam
         }
 
         .locus-logo.horizontal .locus-tagline {
-          font-size: 11px;
+          font-size: 14px;
           letter-spacing: 0.24em;
           white-space: nowrap;
         }
@@ -239,7 +239,7 @@ export default function Logo({ variant = 'default', showTagline = true, classNam
           }
 
           .locus-logo.default .locus-tagline {
-            font-size: 9px;
+            font-size: 12px;
             letter-spacing: 0.18em;
           }
 
