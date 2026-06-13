@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: 'Inter', sans-serif;
+    background-color: #fcf8ff;
+    color: #1b1b24;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+.material-symbols-outlined.fill {
+  font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #e4e1ee;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #c7c4d8;
+}
+
+.mesh-bg {
+  background-color: #fcf8ff;
+  background-image: radial-gradient(at 40% 20%, hsla(250,100%,94%,0.4) 0px, transparent 50%),
+                    radial-gradient(at 80% 0%, hsla(189,100%,96%,0.4) 0px, transparent 50%),
+                    radial-gradient(at 0% 50%, hsla(355,100%,93%,0.4) 0px, transparent 50%);
+}
+
+.table-row-hover:hover {
+  background-color: #f5f2ff;
+}
+
+.pulse-border {
+  animation: pulse-border 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes pulse-border {
+  0%, 100% { border-color: transparent; }
+  50% { border-color: #3525cd; }
+}
+
+.progress-ring__circle {
+  transition: stroke-dashoffset 0.35s;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+  filter: drop-shadow(0 0 12px #3525cd);
+}
+
+@keyframes gradient-bg {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+.animate-gradient-bg {
+  background-size: 200% 200%;
+  animation: gradient-bg 15s ease infinite;
+}
