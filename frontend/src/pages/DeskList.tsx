@@ -227,7 +227,7 @@ export default function DeskList() {
 
   if (loading) {
     return (
-      <main className="flex-1 md:ml-72 p-6 md:p-8 mx-auto mb-20 md:mb-0 overflow-y-auto bg-gradient-to-br from-indigo-50/20 via-white to-purple-50/20">
+      <main className="flex-1 p-6 md:p-8 mx-auto mb-20 md:mb-0 overflow-y-auto bg-gradient-to-br from-indigo-50/20 via-white to-purple-50/20">
         <div className="flex items-center justify-center h-64">
           <div className="flex flex-col items-center gap-4">
             <div className="w-12 h-12 border-4 border-slate-200 border-t-slate-700 rounded-full animate-spin"></div>
@@ -239,21 +239,22 @@ export default function DeskList() {
   }
 
   return (
-    <main className="flex-1 md:ml-72 p-6 md:p-8 mx-auto mb-20 md:mb-0 overflow-y-auto bg-gradient-to-br from-indigo-50/20 via-white to-purple-50/20">
-      {/* Back Button */}
-      <button 
-        onClick={() => navigate(-1)}
-        className="flex items-center gap-2 text-primary hover:text-purple-600 transition-all mb-8 group"
-      >
-        <span className="material-symbols-outlined group-hover:-translate-x-1 transition-transform">arrow_back</span>
-        <span className="font-semibold">Back to Map</span>
-      </button>
+    <main className="flex-1 p-6 md:p-8 mx-auto mb-20 md:mb-0 overflow-y-auto bg-gradient-to-br from-indigo-50/20 via-white to-purple-50/20">
+      <div className="max-w-7xl mx-auto">
+        {/* Back Button */}
+        <button 
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 text-primary hover:text-purple-600 transition-all mb-8 group"
+        >
+          <span className="material-symbols-outlined group-hover:-translate-x-1 transition-transform">arrow_back</span>
+          <span className="font-semibold">Back to Map</span>
+        </button>
 
-      {/* Hero Section */}
-      <div className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold text-on-surface mb-2">Desk Overview</h1>
-        <p className="text-on-surface-variant">Real-time status of all desks in Main Hall</p>
-      </div>
+        {/* Hero Section */}
+        <div className="mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold text-on-surface mb-2">Desk Overview</h1>
+          <p className="text-on-surface-variant">Real-time status of all desks in Main Hall</p>
+        </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
@@ -556,6 +557,7 @@ export default function DeskList() {
             Refresh
           </button>
         </div>
+      </div>
       </div>
     </main>
   );
