@@ -1,7 +1,12 @@
 import { useSocket } from '../context/SocketContext';
+import { useAuth } from '../context/AuthContext';
 
 export default function ConnectionStatus() {
   const { isConnected } = useSocket();
+  const { user } = useAuth();
+
+  // Only show connection status when logged in
+  if (!user) return null;
 
   return (
     <div

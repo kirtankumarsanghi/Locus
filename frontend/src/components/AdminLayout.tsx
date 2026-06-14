@@ -221,7 +221,9 @@ export default function AdminLayout() {
       {/* Enhanced BottomNavBar (Mobile) */}
       <nav className="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 bg-white/95 backdrop-blur-2xl border-t-2 border-primary/10 shadow-2xl">
         {mobileNavItems.map(item => {
-          const isActive = item.to !== '#' && location.pathname === item.to;
+          const isActive = item.to === '/admin'
+            ? location.pathname === '/admin'
+            : item.to !== '#' && location.pathname.startsWith(item.to);
           return item.to === '#' ? (
             <span key={item.label} className="flex flex-col items-center justify-center text-on-surface-variant rounded-xl px-3 py-2 opacity-50">
               <span className="material-symbols-outlined text-xl">{item.icon}</span>

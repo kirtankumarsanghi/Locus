@@ -1,7 +1,20 @@
 import Database, { Database as DatabaseType } from 'better-sqlite3';
 import path from 'path';
+import fs from 'fs';
 
-const DB_PATH = process.env.DB_PATH || path.join(__dirname, '..', 'locus.db');
+// Support Render persistent disk or local development
+let DB_PATH: string;
+if (process.env.RENDER) {
+  // On Render, use persistent disk mount path
+  const dataDir = '/app/backend/data';
+  if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir, { recursive: true });
+  }
+  DB_PATH = path.join(dataDir, 'locus.db');
+} else {
+  // Local development or custom DB_PATH
+  DB_PATH = process.env.DB_PATH || path.join(__dirname, '..', 'locus.db');
+}
 
 const db: DatabaseType = new Database(DB_PATH);
 

@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: locus-backend
+    runtime: node
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 4000
+      - key: CORS_ORIGIN
+        sync: false # You'll set this manually after frontend deployment
+    disk:
+      name: locus-data
+      mountPath: /app/backend/data
+      sizeGB: 1

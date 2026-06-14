@@ -179,7 +179,9 @@ export default function Layout() {
         </nav>
 
         {/* Page Content (injected via Outlet) */}
-        <Outlet />
+        <div className="flex-1 md:ml-64 overflow-y-auto pb-20 md:pb-0">
+          <Outlet />
+        </div>
       </div>
 
       {/* Enhanced BottomNavBar (Mobile) */}
