@@ -1,507 +1,312 @@
-# 🚀 LOCUS
-
-### AI-Powered Smart Library & Study Space Management Platform
-
 <div align="center">
 
-![Status](https://img.shields.io/badge/Status-Production%20Ready-success?style=for-the-badge)
-![React](https://img.shields.io/badge/React-18-blue?style=for-the-badge\&logo=react)
-![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=for-the-badge\&logo=typescript)
-![NodeJS](https://img.shields.io/badge/Node.js-Backend-green?style=for-the-badge\&logo=node.js)
-![Socket.IO](https://img.shields.io/badge/Socket.IO-RealTime-black?style=for-the-badge\&logo=socket.io)
+# LOCUS
 
-### 🎯 *"Your Seat. Not Your Bag's."*
+### Intelligent Library Space Management Platform
 
-Transforming traditional libraries into intelligent, real-time study ecosystems with AI-powered recommendations, live desk tracking, gamification, analytics, and seamless room booking.
+<p align="center">
+  <a href="#">
+    <img src="https://readme-typing-svg.demolab.com?font=Inter&weight=600&size=24&pause=1000&color=4F46E5&center=true&vCenter=true&width=700&lines=AI-Powered+Library+Management;Real-Time+Desk+Tracking;Smart+Seat+Recommendations;Study+Analytics+%26+Gamification;Built+for+Modern+Academic+Institutions" alt="Typing SVG" />
+  </a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/React-18-149ECA?style=for-the-badge&logo=react">
+  <img src="https://img.shields.io/badge/TypeScript-5.0-3178C6?style=for-the-badge&logo=typescript">
+  <img src="https://img.shields.io/badge/Node.js-20-339933?style=for-the-badge&logo=node.js">
+  <img src="https://img.shields.io/badge/Socket.IO-Realtime-000000?style=for-the-badge&logo=socket.io">
+  <img src="https://img.shields.io/badge/Status-Production%20Ready-22C55E?style=for-the-badge">
+</p>
 
 ---
 
-### 🌟 Live Capabilities
+### Your Seat. Not Your Bag's.
 
-⚡ Real-Time Desk Tracking
-🤖 AI Smart Seat Recommendations
-🏆 Achievement & Gamification System
-📊 Advanced Analytics & Heatmaps
-🔔 Instant Notifications
-📱 Fully Responsive Design
-🔐 Enterprise-Grade RBAC Security
-📈 170+ Integrated Features
+A next-generation library management ecosystem that combines real-time occupancy monitoring, AI-powered study recommendations, intelligent room booking, advanced analytics, and automated administration into a single unified platform.
 
 </div>
 
 ---
 
-# 🎬 Overview
+# Platform Preview
 
-LOCUS is a next-generation Library Desk Management System built to solve one of the most common challenges in academic institutions:
-
-> Students occupy study desks with bags and personal belongings while being absent for long periods, making it difficult for others to find available spaces.
-
-LOCUS provides:
-
-* Live desk occupancy monitoring
-* Smart study space discovery
-* Automated session management
-* AI-powered recommendations
-* Real-time synchronization
-* Gamified student engagement
-* Powerful administrative analytics
-
-All powered through a modern full-stack architecture.
+<p align="center">
+  <img width="100%" src="docs/assets/locus-preview.gif">
+</p>
 
 ---
 
-# ✨ Key Highlights
+# The Problem
 
-## 🤖 AI-Powered Intelligence
+Modern academic libraries face a common challenge:
 
-### Smart Seat Recommendation Engine
+* Desks remain occupied while students are absent
+* Staff lack real-time visibility into occupancy
+* Students waste time searching for available seats
+* Room bookings are managed inefficiently
+* Study analytics are virtually nonexistent
 
-LOCUS analyzes:
-
-* Previous desk usage
-* Preferred study zones
-* Noise preferences
-* Availability patterns
-* Study habits
-
-and generates personalized desk rankings.
-
-### Study Insights
-
-* Learning streak tracking
-* Productivity trends
-* Peak study hour analysis
-* Favorite location detection
-* Goal progress monitoring
+LOCUS transforms traditional libraries into intelligent, data-driven learning environments.
 
 ---
 
-# 👨‍🎓 Student Features
+# Core Capabilities
 
-## 🔑 Smart Check-In System
+<table>
+<tr>
+<td width="50%">
 
-### 3 Check-In Methods
+### Smart Study Experience
 
-* ⚡ Quick Desk Selection
-* 📷 QR Code Scanner
-* ⌨️ Manual Desk Entry
+* AI Seat Recommendations
+* Personalized Study Analytics
+* Multi-Method Check-In
+* Live Session Tracking
+* Study Streak Monitoring
+* Goal Progress Tracking
+* Achievement System
+* Smart Room Booking
 
-### Session Management
+</td>
 
-* Live study timer
-* Temporary Away Mode
-* Return Session Recovery
-* Manual Checkout
-* Auto Session Expiry
-* Status Indicators
+<td width="50%">
 
----
+### Administrative Intelligence
 
-## 📊 Personal Dashboard
+* Real-Time Occupancy Monitoring
+* Interactive Floor Maps
+* Automated Desk Recovery
+* Broadcast Notifications
+* Utilization Analytics
+* User Management
+* System Configuration
+* Multi-Format Reporting
 
-### Study Statistics
-
-* Total Study Hours
-* Weekly Study Hours
-* Active Session Tracking
-* Recent Session History
-* Desk Availability Overview
-
-### Goals & Streaks
-
-* Daily Goals
-* Weekly Goals
-* Monthly Goals
-* Consecutive Study Day Streaks
+</td>
+</tr>
+</table>
 
 ---
 
-## 🏆 Achievement System
-
-Unlock achievements as you study:
-
-| Achievement           | Description           |
-| --------------------- | --------------------- |
-| 🌅 Early Bird         | Check-in before 8 AM  |
-| 🔥 Consistent Learner | 7-Day Streak          |
-| 🏃 Marathon Session   | Study 4+ Hours        |
-| 🏛 Room Master        | Use Every Room        |
-| 🌙 Night Owl          | Study After 8 PM      |
-| 💯 Century Club       | Complete 100 Sessions |
-
----
-
-## 🔍 Smart Seat Finder
-
-Find the perfect study space using:
-
-* Live Availability
-* Zone Filters
-* Floor Filters
-* Room Filters
-* Search by Desk
-* Instant Check-In
-
----
-
-## 📅 Room Booking
-
-Students can:
-
-* Browse Rooms
-* Reserve Time Slots
-* Track Approval Status
-* Cancel Bookings
-* View Capacity Details
-* Check Noise Levels
-
----
-
-# 👨‍💼 Staff Features
-
-## 🗺 Interactive Library Map
-
-Real-time visual floor map with:
-
-🟢 Available Desks
-
-🔴 Occupied Desks
-
-🟡 Away Desks
-
-🟣 Abandoned Desks
-
-Features:
-
-* Pan & Zoom
-* Live Updates
-* Session Timers
-* Desk Inspection
-* Status Monitoring
-
----
-
-## 🚨 Desk Operations
-
-Staff can:
-
-* Reset Desks
-* End Sessions
-* Flag Issues
-* Manage Occupancy
-* Review Alerts
-
----
-
-## 📊 Operational Analytics
-
-### Live Metrics
-
-* Occupancy Rate
-* Active Sessions
-* Available Desks
-* Abandoned Desks
-
-### Visual Reports
-
-* Pie Charts
-* Bar Charts
-* Line Charts
-* Usage Trends
-
----
-
-# 🔧 Admin Features
-
-## 👥 User Management
-
-### Complete User Lifecycle
-
-* Create Users
-* Edit Users
-* Delete Users
-* Suspend Accounts
-* Activate Accounts
-* Role Assignment
-
-Supported Roles:
-
-* Student
-* Staff
-* Administrator
-
----
-
-## 🪑 Desk Management
-
-* Create Desks
-* Assign Rooms
-* Monitor Status
-* Remove Desks
-* Handle Active Sessions
-
----
-
-## 🏢 Room Management
-
-* Create Rooms
-* Configure Capacity
-* Set Noise Levels
-* Assign Zones
-* Remove Rooms
-
----
-
-## 📈 Enterprise Analytics
-
-### System Reports
-
-* User Statistics
-* Session Statistics
-* Room Utilization
-* Occupancy Trends
-* Department Usage
-* Peak Hour Heatmaps
-
----
-
-## 📤 Export Center
-
-Generate reports in:
-
-* CSV
-* Excel
-* JSON
-* PDF (Planned)
-
----
-
-# 🔔 Real-Time Notification System
-
-Supported Notification Types:
-
-* SESSION_STARTED
-* AWAY_WARNING
-* SESSION_EXPIRED
-* BOOKING_REMINDER
-* ABANDONED_DESK
-* NEW_BOOKING
-* SYSTEM_ALERT
-
-Features:
-
-* Instant Delivery
-* Browser Notifications
-* Unread Counters
-* Priority Levels
-* Notification History
-
----
-
-# ⚡ Real-Time Architecture
-
-Powered by Socket.IO
-
-### Live Events
-
-* desk:updated
-* session:checkin
-* session:away
-* session:back
-* session:checkout
-* session:expired
-* notification:new
-* analytics:updated
-* admin:user_updated
-
-### Benefits
-
-* Sub-second Updates
-* Auto Reconnection
-* Offline Recovery
-* Zero Manual Refresh
-
----
-
-# 📊 Analytics Engine
-
-## Visualizations
-
-* Daily Study Trends
-* Weekly Study Trends
-* Monthly Study Trends
-* Occupancy Distribution
-* Usage Heatmaps
-* Goal Progress Charts
-
-### Student Analytics
-
-* Favorite Desk
-* Favorite Room
-* Total Hours
-* Session History
-* Study Streaks
-
----
-
-# 🔐 Security
-
-LOCUS includes enterprise-grade security features:
-
-✅ Role-Based Access Control
-
-✅ Protected Routes
-
-✅ Session Persistence
-
-✅ Input Validation
-
-✅ SQL Injection Protection
-
-✅ User Status Verification
-
-✅ Type-Safe Backend
-
-✅ Error Boundaries
-
----
-
-# 🎨 User Experience
-
-### Modern UI Features
-
-* Material Design 3
-* Responsive Layout
-* Mobile Navigation
-* Desktop Sidebar
-* Skeleton Loading
-* Smooth Animations
-* Accessibility Support
-* High Contrast Compatibility
-
----
-
-# 🏗 System Architecture
+# Feature Ecosystem
 
 ```text
-┌─────────────────────┐
-│      React App      │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│   Socket.IO Layer   │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│ Express API Server  │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│ SQLite Database     │
-└─────────────────────┘
+Student Platform
+├── Smart Check-In
+├── Active Sessions
+├── Study Dashboard
+├── Seat Finder
+├── Room Booking
+├── Study Analytics
+├── Goal Tracking
+└── Achievement Engine
+
+Staff Platform
+├── Live Floor Map
+├── Desk Monitoring
+├── Occupancy Analytics
+├── Alert Management
+└── Room Oversight
+
+Admin Platform
+├── User Management
+├── Desk Management
+├── Room Management
+├── System Analytics
+├── Booking Administration
+└── Platform Configuration
 ```
 
 ---
 
-# 🛠 Tech Stack
+# AI Recommendation Engine
 
-## Frontend
+LOCUS continuously analyzes study behavior and calculates personalized desk recommendations based on:
 
-* React 18
-* TypeScript
-* Vite
-* Tailwind CSS
-* Recharts
-* Socket.IO Client
+* Historical Usage
+* Preferred Study Zones
+* Noise Preferences
+* Occupancy Patterns
+* Availability Score
+* Session History
 
-## Backend
+```text
+Recommendation Score
 
-* Node.js
-* Express
-* TypeScript
-* Socket.IO
-* SQLite
-* ExcelJS
-
-## Database
-
-* SQLite3
-* WAL Mode
-* Indexed Queries
-* Foreign Key Constraints
+40% Previous Usage
+25% Preferred Zone
+15% Availability
+10% Noise Match
+10% Recent Activity
+```
 
 ---
 
-# 📈 Project Statistics
+# Real-Time Infrastructure
 
-| Metric             | Count |
-| ------------------ | ----- |
-| Student Features   | 40+   |
-| Staff Features     | 25+   |
-| Admin Features     | 50+   |
-| API Endpoints      | 60+   |
-| Real-Time Events   | 13    |
-| Database Tables    | 8     |
-| Notification Types | 7     |
-| User Roles         | 3     |
-| Export Formats     | 4     |
-| Chart Types        | 10+   |
-| Total Features     | 170+  |
+```mermaid
+graph TD
 
----
+A[Student Client]
+B[Staff Dashboard]
+C[Admin Console]
 
-# 🚀 Unique Innovations
+A --> D[Socket.IO Gateway]
+B --> D
+C --> D
 
-### What Makes LOCUS Different?
+D --> E[Express Server]
 
-✅ AI Recommendation Engine
+E --> F[Session Engine]
+E --> G[Notification Engine]
+E --> H[Analytics Engine]
 
-✅ Achievement System
-
-✅ Study Streak Tracking
-
-✅ Heatmap Analytics
-
-✅ Multi-Method Check-In
-
-✅ Smart Session State Machine
-
-✅ Real-Time Synchronization
-
-✅ Notification Broadcasting
-
-✅ Bulk Operations
-
-✅ Time-Travel Analytics
-
-✅ PWA Ready
-
-✅ Connection Resilience
+F --> I[(SQLite)]
+G --> I
+H --> I
+```
 
 ---
 
-# 🌍 Future Roadmap
+# Platform Modules
 
-* AI Study Partner
-* Mobile App
-* Predictive Occupancy Forecasting
-* Smart Library IoT Integration
-* QR Attendance Analytics
-* Campus-Wide Space Management
+## Student Experience
+
+### Check-In System
+
+* Quick Select
+* QR Scanning
+* Manual Desk Entry
+
+### Session Lifecycle
+
+```text
+AVAILABLE
+    │
+    ▼
+OCCUPIED
+    │
+    ▼
+AWAY
+    │
+    ▼
+ABANDONED
+    │
+    ▼
+RESET
+```
+
+### Analytics
+
+* Daily Study Hours
+* Weekly Trends
+* Monthly Reports
+* Favorite Locations
+* Streak Analysis
+* Goal Tracking
+
+---
+
+## Staff Operations
+
+### Interactive Monitoring
+
+* Live Floor Layout
+* Desk Inspection
+* Session Management
+* Alert Resolution
+* Bulk Operations
+
+### Reporting
+
+* Occupancy Distribution
+* Peak Hour Analysis
+* Utilization Reports
+* Export Tools
+
+---
+
+## Administrative Control
+
+### User Administration
+
+* Create Users
+* Modify Roles
+* Suspend Accounts
+* Activity Monitoring
+
+### Infrastructure Management
+
+* Room Configuration
+* Desk Allocation
+* System Policies
+* Notification Broadcasts
+
+---
+
+# Technology Stack
+
+<table>
+<tr>
+<td><strong>Frontend</strong></td>
+<td>React 18 · TypeScript · Vite · TailwindCSS · Recharts · Socket.IO</td>
+</tr>
+
+<tr>
+<td><strong>Backend</strong></td>
+<td>Node.js · Express · TypeScript · Socket.IO</td>
+</tr>
+
+<tr>
+<td><strong>Database</strong></td>
+<td>SQLite · WAL Mode · Indexed Queries</td>
+</tr>
+
+<tr>
+<td><strong>Exports</strong></td>
+<td>CSV · Excel · JSON · PDF</td>
+</tr>
+</table>
+
+---
+
+# System Metrics
+
+| Category                | Count |
+| ----------------------- | ----- |
+| Student Features        | 40+   |
+| Staff Features          | 25+   |
+| Admin Features          | 50+   |
+| API Endpoints           | 60+   |
+| Real-Time Events        | 13    |
+| Notification Types      | 7     |
+| Export Formats          | 4     |
+| User Roles              | 3     |
+| Charts & Visualizations | 10+   |
+| Total Features          | 170+  |
+
+---
+
+# Why LOCUS
+
+Unlike traditional library systems, LOCUS combines:
+
+* Artificial Intelligence
+* Real-Time Synchronization
+* Gamification
+* Behavioral Analytics
+* Predictive Insights
+* Automated Enforcement
+* Modern UX Principles
+
+into a single integrated platform designed specifically for academic institutions.
 
 ---
 
 <div align="center">
 
-## ⭐ If you like LOCUS, give it a star!
+### Built for Modern Libraries
 
-Built with ❤️ for students, libraries, and academic institutions.
-
-### LOCUS — Smart Study Spaces. Smarter Learning.
+Real-Time • Intelligent • Scalable
 
 </div>
-
